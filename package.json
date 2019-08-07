@@ -1,16 +1,16 @@
 {
-  "name": "nodebb-plugin-quickstart",
+  "name": "nodebb-plugin-custom-categories-page",
   "version": "0.2.4",
   "description": "A starter kit for quickly creating NodeBB plugins",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/psychobunny/nodebb-plugin-quickstart"
+    "url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page"
   },
   "keywords": [
     "nodebb",
     "plugin",
-    "quickstart",
+    "custom-categories-page",
     "shell"
   ],
   "husky": {
@@ -26,12 +26,12 @@
     ]
   },
   "author": {
-    "name": "psychobunny",
-    "email": "psycho.bunny@hotmail.com"
+    "name": "oplik0",
+    "email": "opliko.reg+npm@protonmail.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/psychobunny/nodebb-plugin-quickstart/issues"
+    "url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page/issues"
   },
   "readmeFilename": "README.md",
   "nbbpm": {

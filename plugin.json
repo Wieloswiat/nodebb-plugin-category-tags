@@ -1,6 +1,6 @@
 {
-	"id": "nodebb-plugin-quickstart",
-	"url": "https://github.com/NodeBB/nodebb-plugin-quickstart",
+	"id": "nodebb-plugin-custom-categories-page",
+	"url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page",
 	"library": "./library.js",
 	"hooks": [
 		{
