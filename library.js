@@ -1,12 +1,18 @@
 'use strict';
 
+const util = require('util');
 const controllers = require('./lib/controllers');
 const meta = require.main.require('./src/meta');
 const helpers = require.main.require('./src/routes/helpers');
 const categories = require.main.require('./src/categories')
 const groups = require.main.require('./src/groups')
 
+
 const plugin = {};
+
+groups.getUserGroups = util.promisify(groups.getUserGroups);
+categories.getActiveUsers = util.promisify(categories.getActiveUsers);
+categories.getRecentReplies = util.promisify(categories.getRecentReplies);
 
 plugin.init = function (params, callback) {
 	const router = params.router;
@@ -124,6 +130,7 @@ plugin.render = async function (data, callback) {
 		}
 	}
 	callback(null, data);
+	//return(null, data);
 }
 
 function filterCategories (element) {
