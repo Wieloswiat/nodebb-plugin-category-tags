@@ -1,6 +1,6 @@
 {
-	"id": "nodebb-plugin-custom-categories-page",
-	"url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page",
+	"id": "nodebb-plugin-category-tags",
+	"url": "https://github.com/oplik0/nodebb-plugin-category-tags",
 	"library": "./library.js",
 	"hooks": [
 		{
@@ -8,6 +8,15 @@
 		},
 		{
 			"hook": "filter:admin.header.build", "method": "addAdminNavigation"
+		},
+		{
+			"hook": "filter:middleware.render", "method": "render"
+		},
+		{
+			"hook": "action:category.create", "method": "addCategory"
+		},
+		{
+			"hook": "action:category.delete", "method": "deleteCategory"
 		}
 	],
 	"staticDirs": {
@@ -22,5 +31,6 @@
 	"acpScripts": [
 		"static/lib/admin.js"
 	],
-	"templates": "static/templates"
+	"templates": "static/templates",
+	"languages": "static/languages"
 }

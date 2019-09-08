@@ -1,16 +1,16 @@
 {
-  "name": "nodebb-plugin-custom-categories-page",
+  "name": "nodebb-plugin-category-tags",
   "version": "0.2.4",
   "description": "A starter kit for quickly creating NodeBB plugins",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page"
+    "url": "https://github.com/oplik0/nodebb-plugin-category-tags"
   },
   "keywords": [
     "nodebb",
     "plugin",
-    "custom-categories-page",
+    "category-tags",
     "shell"
   ],
   "husky": {
@@ -31,7 +31,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/oplik0/nodebb-plugin-custom-categories-page/issues"
+    "url": "https://github.com/oplik0/nodebb-plugin-category-tags/issues"
   },
   "readmeFilename": "README.md",
   "nbbpm": {
