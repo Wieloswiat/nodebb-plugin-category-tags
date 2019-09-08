@@ -56,7 +56,7 @@ plugin.deleteCategory = function(data) {
 	delete plugin.settings.categories[data.category.cid];
 }
 
-plugin.render = async function (data) {
+plugin.render = async function (data, callback) {
 	if (data.templateData.template.name == 'categories') {
 		data.templateData.sort = [
 			{"name":"[[category-tags:popular]]", "url":"popular", "selected":false}, 
@@ -123,7 +123,7 @@ plugin.render = async function (data) {
 			})
 		}
 	}
-	return(null, data);
+	callback(null, data);
 }
 
 function filterCategories (element) {
