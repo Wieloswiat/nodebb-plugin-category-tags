@@ -23,10 +23,46 @@ plugin.init = function (params, callback) {
 	meta.settings.get('category-tags', function(err, settings) {
 		if (err) {
 			winston.error('[plugin/category-tags] Could not retrieve plugin settings!');
-			plugin.settings = {"tags":[""], "categories":{}, "override":{"filter":true, "sort":true}, "popular":{"activeUsers":10.0, "postCount":0.1, "topicCount":0.1, "recentPosts":1.0, "recentPostsTime":604800}};
-			return;
+			plugin.settings = {
+				"tags":["tag"], 
+				"categories":{
+					1:{"tags":[], "override":true}, 
+					2:{"tags":[], "override":true}, 
+					4:{"tags":[], "override":true}
+				}, 
+				"override":{
+					"filter":true, 
+					"sort":true
+				}, 
+				"popular":{
+					"activeUsers":1500.0, 
+					"postCount":750.0, 
+					"topicCount":100.0, 
+					"recentPosts":0.4, 
+					"recentPostsTime":604800
+				}, 
+				"membership":true};			
+				return;
 		}
-		plugin.settings = {"tags":["tag"], "categories":{1:{"tags":[], "override":true}, 2:{"tags":[], "override":true}, 4:{"tags":[], "override":true}}, "override":{"filter":true, "sort":true}, "popular":{"activeUsers":10.0, "postCount":1.0, "topicCount":1.0, "recentPosts":1.0, "recentPostsTime":604800}, "membership":true};
+		plugin.settings = {
+			"tags":["tag"], 
+			"categories":{
+				1:{"tags":[], "override":true}, 
+				2:{"tags":[], "override":true}, 
+				4:{"tags":[], "override":true}
+			}, 
+			"override":{
+				"filter":true, 
+				"sort":true
+			}, 
+			"popular":{
+				"activeUsers":1500.0, 
+				"postCount":750.0, 
+				"topicCount":100.0, 
+				"recentPosts":0.4, 
+				"recentPostsTime":604800
+			}, 
+			"membership":true};
 		categories.getAllCategories(1, function (err, allCategories) {
 			allCategories.forEach(category => {
 				if (plugin.settings.categories[category.cid] == undefined) {
@@ -99,14 +135,14 @@ plugin.render = async function (data, callback) {
 			data.templateData.breadcrumbs[1].url = "/categories";
 			data.templateData.breadcrumbs.push({"text":"[[category-tags:popular]]"});
 			scores = await getScores(data.templateData, data.req)
-			data.templateData.categories.sort((a, b) => scores[b.cid]-scores[a.cid]);
+			data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : scores[b.cid]-scores[a.cid]));
 		}
 		if (data.templateData.url.includes("/new")) {
 			data.templateData.sort[1].selected = true;
 			data.templateData.selectedSort = {"name":"[[category-tags:new]]"};
 			data.templateData.breadcrumbs[1].url = "/categories";
 			data.templateData.breadcrumbs.push({"text":"[[category-tags:new]]"});
-			data.templateData.categories.sort((a, b) => (a.cid<b.cid) ? 1 : ((b.cid<a.cid) ? -1 : 0));
+			data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : (a.cid<b.cid) ? 1 : ((b.cid<a.cid) ? -1 : 0)));
 		}
 		if (data.templateData.url.includes("/active")) {
 			data.templateData.sort[2].selected = true;
@@ -114,6 +150,8 @@ plugin.render = async function (data, callback) {
 			data.templateData.breadcrumbs[1].url = "/categories";
 			data.templateData.breadcrumbs.push({"text":"[[category-tags:active]]"});
 			data.templateData.categories.sort((a, b) => {
+				if (plugin.settings.override.sort && plugin.settings.categories[a.cid].override) return -1;
+				if (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) return 1;
 				if (a.posts[0]==undefined && b.posts[0]==undefined) return 0;
 				if (a.posts[0]==undefined) return 1;
 				if (b.posts[0]==undefined) return -1;
@@ -121,13 +159,13 @@ plugin.render = async function (data, callback) {
 			});
 		}
 
-		if (plugin.settings.override.sort) {
+		/*if (plugin.settings.override.sort) {
 			data.templateData.categories.forEach((category, index) => {
 				if (!!plugin.settings.categories[category.cid].override) {
 					data.templateData.categories.splice(category.order-1,0,data.templateData.categories.splice(index,1)[0]);
 				}
 			})
-		}
+		}*/
 	}
 	callback(null, data);
 	//return(null, data);
@@ -152,7 +190,7 @@ async function getScores(templateData, req) {
 		score += category.post_count * plugin.settings.popular.postCount;
 		scores[category.cid] = score;
 	});
-	return scores
+	return scores;
 }
 
 async function asyncForEach(array, callback) {
