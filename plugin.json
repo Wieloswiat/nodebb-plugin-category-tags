@@ -17,6 +17,12 @@
 		},
 		{
 			"hook": "action:category.delete", "method": "deleteCategory"
+		},
+		{
+			"hook": "filter:widgets.getWidgets","method": "getWidgets"
+		},
+		{
+			"hook": "filter:widget.render:category-tags", "method": "renderWidget"
 		}
 	],
 	"staticDirs": {

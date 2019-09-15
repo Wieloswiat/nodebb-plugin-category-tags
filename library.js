@@ -1,12 +1,14 @@
 'use strict';
 
 const util = require('util');
+const benchpressjs = require.main.require('benchpressjs');
+
 const controllers = require('./lib/controllers');
 const meta = require.main.require('./src/meta');
 const helpers = require.main.require('./src/routes/helpers');
 const categories = require.main.require('./src/categories')
 const groups = require.main.require('./src/groups')
-
+var app;
 
 const plugin = {};
 
@@ -15,6 +17,7 @@ categories.getActiveUsers = util.promisify(categories.getActiveUsers);
 categories.getRecentReplies = util.promisify(categories.getRecentReplies);
 
 plugin.init = function (params, callback) {
+	app = params.app;
 	const router = params.router;
 	const hostMiddleware = params.middleware;
 	const hostControllers = params.controllers;
@@ -96,6 +99,28 @@ plugin.addCategory = function(data) {
 }
 plugin.deleteCategory = function(data) {
 	delete plugin.settings.categories[data.category.cid];
+}
+
+plugin.getWidgets = function (data, callback) {
+	var widget = {
+		name       : 'Sorting and filtering',
+		widget     : 'category-tags',
+		description: "A menu that lets you choose what filters and sorting methods to use for coategory list",
+		content    : ''
+		}
+	data.push(widget);
+	callback(null, data);
+}
+plugin.renderWidget = function (widget, callback) {
+	var tpl = '<div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length -->"<!-- IF breadcrumbs.length -->style="margin-top:-50px"<!-- ELSE -->style="margin-top:-50px;top:35px;"<!-- ENDIF breadcrumbs.length -->><button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{selectedSort.name} <span class="caret"></span></button><ul class="dropdown-menu" role="menu">{{{each sort}}}<li role="presentation" class="category"><a role="menu-item" href="{config.relative_path}/categories/{sort.url}"><i class="fa fa-fw <!-- IF sort.selected -->fa-check<!-- ENDIF sort.selected -->"></i>{sort.name}</a></li>{{{end}}}</ul></div>';
+	benchpressjs.compileParse(tpl, widget.templateData, function(err, output) {
+		if (err) {
+			return callback(err);
+		}
+
+		widget.html = output;
+		callback(null, widget);
+	});
 }
 
 plugin.render = async function (data, callback) {
