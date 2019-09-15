@@ -99,73 +99,63 @@ plugin.deleteCategory = function(data) {
 }
 
 plugin.render = async function (data, callback) {
-	if (data.templateData.template.name == 'categories') {
-		data.templateData.sort = [
-			{"name":"[[category-tags:popular]]", "url":"popular", "selected":false}, 
-			{"name":"[[category-tags:new]]", "url":"new", "selected":false}, 
-			{"name":"[[category-tags:active]]", "url":"active","selected":false},
-			{"name":"[[category-tags:my]]", "url":"my","selected":false},
-			{"name":"[[category-tags:nonmember]]", "url":"nonmember","selected":false},
-		];
-		plugin.settings.tags.forEach(tag => {
-			if (data.templateData.url.includes(tag)) {
-				data.templateData.categories = data.templateData.categories.filter(filterCategories, tag);	
-			}
+	data.templateData.sort = [
+		{"name":"[[category-tags:popular]]", "url":"popular", "selected":false}, 
+		{"name":"[[category-tags:new]]", "url":"new", "selected":false}, 
+		{"name":"[[category-tags:active]]", "url":"active","selected":false},
+		{"name":"[[category-tags:my]]", "url":"my","selected":false},
+		{"name":"[[category-tags:nonmember]]", "url":"nonmember","selected":false},
+	];
+	plugin.settings.tags.forEach(tag => {
+		if (data.templateData.url.includes(tag)) {
+			data.templateData.categories = data.templateData.categories.filter(filterCategories, tag);	
+		}
+	});
+	if (plugin.settings.membership && data.templateData.url.includes("/my")) {
+		data.templateData.sort[3].selected = true;
+		data.templateData.selectedSort = {"name":"[[category-tags:my]]"};
+		data.templateData.breadcrumbs[1].url = "/categories";
+		data.templateData.breadcrumbs.push({"text":"[[category-tags:my]]"});
+		var userGroups = await groups.getUserGroups([data.req.uid]);
+		data.templateData.categories = data.templateData.categories.filter(category => (userGroups[0].find(group => group.name == category.name) != undefined) || (!!plugin.settings.override.filter && !!plugin.settings.categories[category.cid].override));
+	}
+	if (plugin.settings.membership && data.templateData.url.includes("/nonmember")) {
+		data.templateData.sort[4].selected = true;
+		data.templateData.selectedSort = {"name":"[[category-tags:nonmember]]"};
+		data.templateData.breadcrumbs[1].url = "/categories";
+		data.templateData.breadcrumbs.push({"text":"[[category-tags:nonmember]]"});
+		var userGroups = await groups.getUserGroups([data.req.uid]);
+		data.templateData.categories = data.templateData.categories.filter(category => (userGroups[0].find(group => group.name == category.name) == undefined) || (!!plugin.settings.override.filter && !!plugin.settings.categories[category.cid].override));
+	}
+	if (data.templateData.url.includes("/popular")) {
+		data.templateData.sort[0].selected = true;
+		data.templateData.selectedSort = {"name":"[[category-tags:popular]]"};
+		let scores = {};
+		data.templateData.breadcrumbs[1].url = "/categories";
+		data.templateData.breadcrumbs.push({"text":"[[category-tags:popular]]"});
+		scores = await getScores(data.templateData, data.req)
+		data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : scores[b.cid]-scores[a.cid]));
+	}
+	if (data.templateData.url.includes("/new")) {
+		data.templateData.sort[1].selected = true;
+		data.templateData.selectedSort = {"name":"[[category-tags:new]]"};
+		data.templateData.breadcrumbs[1].url = "/categories";
+		data.templateData.breadcrumbs.push({"text":"[[category-tags:new]]"});
+		data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : (a.cid<b.cid) ? 1 : ((b.cid<a.cid) ? -1 : 0)));
+	}
+	if (data.templateData.url.includes("/active")) {
+		data.templateData.sort[2].selected = true;
+		data.templateData.selectedSort = {"name":"[[category-tags:active]]"};
+		data.templateData.breadcrumbs[1].url = "/categories";
+		data.templateData.breadcrumbs.push({"text":"[[category-tags:active]]"});
+		data.templateData.categories.sort((a, b) => {
+			if (plugin.settings.override.sort && plugin.settings.categories[a.cid].override) return -1;
+			if (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) return 1;
+			if (a.posts[0]==undefined && b.posts[0]==undefined) return 0;
+			if (a.posts[0]==undefined) return 1;
+			if (b.posts[0]==undefined) return -1;
+			return b.posts[0].timestamp-a.posts[0].timestamp;
 		});
-		if (plugin.settings.membership && data.templateData.url.includes("/my")) {
-			data.templateData.sort[3].selected = true;
-			data.templateData.selectedSort = {"name":"[[category-tags:my]]"};
-			data.templateData.breadcrumbs[1].url = "/categories";
-			data.templateData.breadcrumbs.push({"text":"[[category-tags:my]]"});
-			var userGroups = await groups.getUserGroups([data.req.uid]);
-			data.templateData.categories = data.templateData.categories.filter(category => (userGroups[0].find(group => group.name == category.name) != undefined) || (!!plugin.settings.override.filter && !!plugin.settings.categories[category.cid].override));
-		}
-		if (plugin.settings.membership && data.templateData.url.includes("/nonmember")) {
-			data.templateData.sort[4].selected = true;
-			data.templateData.selectedSort = {"name":"[[category-tags:nonmember]]"};
-			data.templateData.breadcrumbs[1].url = "/categories";
-			data.templateData.breadcrumbs.push({"text":"[[category-tags:nonmember]]"});
-			var userGroups = await groups.getUserGroups([data.req.uid]);
-			data.templateData.categories = data.templateData.categories.filter(category => (userGroups[0].find(group => group.name == category.name) == undefined) || (!!plugin.settings.override.filter && !!plugin.settings.categories[category.cid].override));
-		}
-		if (data.templateData.url.includes("/popular")) {
-			data.templateData.sort[0].selected = true;
-			data.templateData.selectedSort = {"name":"[[category-tags:popular]]"};
-			let scores = {};
-			data.templateData.breadcrumbs[1].url = "/categories";
-			data.templateData.breadcrumbs.push({"text":"[[category-tags:popular]]"});
-			scores = await getScores(data.templateData, data.req)
-			data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : scores[b.cid]-scores[a.cid]));
-		}
-		if (data.templateData.url.includes("/new")) {
-			data.templateData.sort[1].selected = true;
-			data.templateData.selectedSort = {"name":"[[category-tags:new]]"};
-			data.templateData.breadcrumbs[1].url = "/categories";
-			data.templateData.breadcrumbs.push({"text":"[[category-tags:new]]"});
-			data.templateData.categories.sort((a, b) => ((plugin.settings.override.sort && plugin.settings.categories[a.cid].override) ? -1 : (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) ? 1 : (a.cid<b.cid) ? 1 : ((b.cid<a.cid) ? -1 : 0)));
-		}
-		if (data.templateData.url.includes("/active")) {
-			data.templateData.sort[2].selected = true;
-			data.templateData.selectedSort = {"name":"[[category-tags:active]]"};
-			data.templateData.breadcrumbs[1].url = "/categories";
-			data.templateData.breadcrumbs.push({"text":"[[category-tags:active]]"});
-			data.templateData.categories.sort((a, b) => {
-				if (plugin.settings.override.sort && plugin.settings.categories[a.cid].override) return -1;
-				if (plugin.settings.override.sort && plugin.settings.categories[b.cid].override) return 1;
-				if (a.posts[0]==undefined && b.posts[0]==undefined) return 0;
-				if (a.posts[0]==undefined) return 1;
-				if (b.posts[0]==undefined) return -1;
-				return b.posts[0].timestamp-a.posts[0].timestamp;
-			});
-		}
-
-		/*if (plugin.settings.override.sort) {
-			data.templateData.categories.forEach((category, index) => {
-				if (!!plugin.settings.categories[category.cid].override) {
-					data.templateData.categories.splice(category.order-1,0,data.templateData.categories.splice(index,1)[0]);
-				}
-			})
-		}*/
 	}
 	callback(null, data);
 	//return(null, data);
