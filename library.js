@@ -123,7 +123,7 @@ plugin.renderWidget = function (widget, callback) {
 	});
 }
 
-plugin.render = async function (data, callback) {
+plugin.render = async function (data) {
 	data.templateData.sort = [
 		{"name":"[[category-tags:popular]]", "url":"popular", "selected":false}, 
 		{"name":"[[category-tags:new]]", "url":"new", "selected":false}, 
@@ -182,8 +182,8 @@ plugin.render = async function (data, callback) {
 			return b.posts[0].timestamp-a.posts[0].timestamp;
 		});
 	}
-	callback(null, data);
-	//return(null, data);
+	//callback(null, data);
+	return(null, data);
 }
 
 function filterCategories (element) {
