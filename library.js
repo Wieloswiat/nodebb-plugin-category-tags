@@ -38,10 +38,10 @@ plugin.init = function (params, callback) {
 					"sort":true
 				}, 
 				"popular":{
-					"activeUsers":15000.0, 
-					"postCount":0.5, 
-					"topicCount":100.0, 
-					"recentPosts":5000, 
+					"activeUsers":5000, 
+					"postCount":1, 
+					"topicCount":100, 
+					"recentPosts":15000, 
 					"recentPostsTime":604800
 				}, 
 				"membership":true};			
@@ -59,10 +59,10 @@ plugin.init = function (params, callback) {
 				"sort":true
 			}, 
 			"popular":{
-				"activeUsers":15000.0, 
-				"postCount":0.5, 
-				"topicCount":100.0, 
-				"recentPosts":5000, 
+				"activeUsers":5000, 
+				"postCount":1, 
+				"topicCount":100, 
+				"recentPosts":15000, 
 				"recentPostsTime":604800
 			}, 
 			"membership":true};
