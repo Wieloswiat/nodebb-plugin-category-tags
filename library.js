@@ -42,7 +42,7 @@ plugin.init = function (params, callback) {
 					"postCount":1, 
 					"topicCount":100, 
 					"recentPosts":15000, 
-					"recentPostsTime":604800
+					"recentPostsTime":604800000
 				}, 
 				"membership":true};			
 				return;
@@ -63,7 +63,7 @@ plugin.init = function (params, callback) {
 				"postCount":1, 
 				"topicCount":100, 
 				"recentPosts":15000, 
-				"recentPostsTime":604800
+				"recentPostsTime":604800000
 			}, 
 			"membership":true};
 		categories.getAllCategories(1, function (err, allCategories) {
