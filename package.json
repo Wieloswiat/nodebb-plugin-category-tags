@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-category-tags",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A starter kit for quickly creating NodeBB plugins",
   "main": "library.js",
   "repository": {
