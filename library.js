@@ -191,7 +191,7 @@ function filterCategories (element) {
 }
 
 async function getScores(templateData, req) {
-	let scores = [];
+	let scores = {};
 	let promises = {
 		activeUsers: {},
 		recentReplies: {}
