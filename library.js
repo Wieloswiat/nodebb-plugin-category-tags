@@ -38,10 +38,10 @@ plugin.init = function (params, callback) {
 					"sort":true
 				}, 
 				"popular":{
-					"activeUsers":1500.0, 
-					"postCount":750.0, 
+					"activeUsers":15000.0, 
+					"postCount":0.5, 
 					"topicCount":100.0, 
-					"recentPosts":0.4, 
+					"recentPosts":5000, 
 					"recentPostsTime":604800
 				}, 
 				"membership":true};			
@@ -59,10 +59,10 @@ plugin.init = function (params, callback) {
 				"sort":true
 			}, 
 			"popular":{
-				"activeUsers":1500.0, 
-				"postCount":750.0, 
+				"activeUsers":15000.0, 
+				"postCount":0.5, 
 				"topicCount":100.0, 
-				"recentPosts":0.4, 
+				"recentPosts":5000, 
 				"recentPostsTime":604800
 			}, 
 			"membership":true};
@@ -192,12 +192,20 @@ function filterCategories (element) {
 
 async function getScores(templateData, req) {
 	let scores = [];
+	let promises = {
+		activeUsers: {},
+		recentReplies: {}
+	};
+	templateData.categories.forEach((category) => {
+		promises.activeUsers[category.cid] = categories.getActiveUsers(category.cid);
+		promises.recentReplies[category.cid] = categories.getRecentReplies(category.cid, req.uid, 500);
+	});
 	await asyncForEach(templateData.categories, async (category) => {
 		var score = 0.0;
 		var time = req.session.datetime;
-		var users = await categories.getActiveUsers(category.cid);
+		var users = await promises.activeUsers[category.cid];
 		score += users.length * plugin.settings.popular.activeUsers;
-		var replies = await categories.getRecentReplies(category.cid, req.uid, 50);
+		var replies = await promises.recentReplies[category.cid];
 		replies = replies.filter(x => time-x.timestamp >= plugin.settings.popular.recentPostsTime && !!x.deleted);
 		score += replies.length * plugin.settings.popular.recentPosts;
 	
