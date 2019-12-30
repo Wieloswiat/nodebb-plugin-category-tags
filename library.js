@@ -200,15 +200,18 @@ async function getScores(templateData, req) {
 		promises.activeUsers[category.cid] = categories.getActiveUsers(category.cid);
 		promises.recentReplies[category.cid] = categories.getRecentReplies(category.cid, req.uid, 500);
 	});
+	let time = Date.now();
 	await asyncForEach(templateData.categories, async (category) => {
 		var score = 0.0;
-		var time = req.session.datetime;
-		var users = await promises.activeUsers[category.cid];
-		score += users.length * plugin.settings.popular.activeUsers;
-		var replies = await promises.recentReplies[category.cid];
-		replies = replies.filter(x => time-x.timestamp >= plugin.settings.popular.recentPostsTime && !!x.deleted);
-		score += replies.length * plugin.settings.popular.recentPosts;
-	
+		try {
+			var users = await promises.activeUsers[category.cid];
+			score += users.length * plugin.settings.popular.activeUsers;
+			var replies = await promises.recentReplies[category.cid];
+			replies = replies.filter(x => time-x.timestamp <= plugin.settings.popular.recentPostsTime && time-x.timestamp > 0 && !x.deleted);
+			score += replies.length * plugin.settings.popular.recentPosts;
+		} catch (e) {
+			console.log(e);
+		}
 		score += category.topic_count * plugin.settings.popular.topicCount;
 		score += category.post_count * plugin.settings.popular.postCount;
 		scores[category.cid] = score;
