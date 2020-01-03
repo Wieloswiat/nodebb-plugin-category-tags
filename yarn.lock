@@ -35,17 +35,17 @@
     resolve-from "5.0.0"
     resolve-global "1.0.0"
 
-"@commitlint/config-angular-type-enum@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/config-angular-type-enum/-/config-angular-type-enum-8.2.0.tgz#ab7b48501deb0ceab2ec3b356a8e1406448eb00d"
-  integrity sha512-XjIwB7/sw3MRL3Y8jqmf1FQrwoH/RU6l/UXuSjDYRjFLUqosVPcb7bGjLd22Mpbc0szIpEBys3VPthNY8akTUw==
+"@commitlint/config-angular-type-enum@^8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@commitlint/config-angular-type-enum/-/config-angular-type-enum-8.3.0.tgz#bc44e18a5407f11586e542a6cc364f56a02b673a"
+  integrity sha512-JJkPAy1T8nFyDFLk5f44GGMa2A9uXkgCT0Vr9DY8K1vwaXMKoTOAZhwPqJFjO1wbCeL9fpssbG8/xu9p5++9pQ==
 
-"@commitlint/config-angular@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@commitlint/config-angular/-/config-angular-8.2.0.tgz#826cf9d665f5742571988eb388b1c1a1a542c96b"
-  integrity sha512-N1MDHoYwTlWtQwXbDFAvu3pMS0encb0QR29LfEqvR1+2DV2SrdAfCEIX9Wi3DgEo2Ra5uKDDHhYbMuQWV5Jvyg==
+"@commitlint/config-angular@^8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@commitlint/config-angular/-/config-angular-8.3.0.tgz#04bfd06c2c8fb2f11cb9e2820976bd2c01d8597d"
+  integrity sha512-xdWMFHA9b7I/Whxv19oPgLKfRVuTWGd84kAIZ4wECJsQcaCjs7bfxfrswfHU3vsvZ5Geb++l3w4iaMy2SjJopQ==
   dependencies:
-    "@commitlint/config-angular-type-enum" "^8.2.0"
+    "@commitlint/config-angular-type-enum" "^8.3.0"
 
 "@commitlint/ensure@^8.0.0":
   version "8.0.0"
@@ -1311,18 +1311,11 @@ is-arrayish@^0.2.1:
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.2.1.tgz#77c99840527aa8ecb1a8ba697b80645a7a926a9d"
   integrity sha1-d8mYQFJ6qOyxqLppe4BkWnqSap0=
 
-is-callable@^1.1.5:
+is-callable@^1.1.4, is-callable@^1.1.5:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/is-callable/-/is-callable-1.1.5.tgz#f7e46b596890456db74e7f6e976cb3273d06faab"
   integrity sha512-ESKv5sMCJB2jnHTWZ3O5itG+O128Hsus4K4Qh1h2/cgn2vbgnLSVqfV46AeJA9D5EeeLa9w81KUXMtn34zhX+Q==
 
-is-ci@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/is-ci/-/is-ci-2.0.0.tgz#6bc6334181810e04b5c22b3d589fdca55026404c"
-  integrity sha512-YfJT7rkpQB0updsdHLGWrvhBJfcfzNNawYDNIyQXJz0IViGf75O8EBPKSdvw2rF+LGCsX4FZ8tcr3b19LcZq4w==
-  dependencies:
-    ci-info "^2.0.0"
-    
 is-date-object@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/is-date-object/-/is-date-object-1.0.1.tgz#9aa20eb6aeebbff77fbd33e74ca01b33581d3a16"
