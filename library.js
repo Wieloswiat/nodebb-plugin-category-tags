@@ -276,11 +276,7 @@ async function getScores(templateData, req) {
     var promises = {};
     const time = Date.now();
     templateData.categories.forEach(category => {
-        promises[category.cid] = getScoreForCategory(
-            category.cid,
-            req.uid,
-            time
-        );
+        promises[category.cid] = getScoreForCategory(category, req.uid, time);
     });
     return await objectPromise(promises);
 }
