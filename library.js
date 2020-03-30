@@ -289,7 +289,7 @@ async function getScoreForCategory(category) {
         categories.getActiveUsers(category.cid),
         analytics.getCategoryAnalytics(category.cid),
         analytics.getDailyStatsForSet(
-            "analytics:posts:byCid:" + cid,
+            "analytics:posts:byCid:" + category.cid,
             Date.now(),
             30
         ),
