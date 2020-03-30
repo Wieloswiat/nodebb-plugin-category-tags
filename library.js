@@ -47,9 +47,10 @@ plugin.init = function(params, callback) {
                     topicCount: 100,
                     recentPosts: 15000,
                     recentPostsTime: 604800000,
-                    popularTopics: 1000,
-                    pageViewsWeek: 10000,
-                    pageViewsDay: 5000
+                    recentPostsTime: 604800000,
+                    popularTopics: 5000,
+                    pageViewsWeek: 500,
+                    pageViewsDay: 300
                 },
                 membership: true
             };
@@ -73,9 +74,9 @@ plugin.init = function(params, callback) {
                 recentPosts: 15000,
                 recentPostsTime: 604800000,
                 recentPostsTime: 604800000,
-                popularTopics: 1000,
-                pageViewsWeek: 10000,
-                pageViewsDay: 5000
+                popularTopics: 5000,
+                pageViewsWeek: 500,
+                pageViewsDay: 300
             },
             membership: true
         };
@@ -210,12 +211,11 @@ plugin.render = async function(data) {
     if (data.templateData.url.includes("/popular")) {
         data.templateData.sort[0].selected = true;
         data.templateData.selectedSort = { name: "[[category-tags:popular]]" };
-        let scores = {};
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({
             text: "[[category-tags:popular]]"
         });
-        scores = await getScores(data.templateData, data.req);
+        const scores = await getScores(data.templateData, data.req);
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.override.sort) {
                 if (plugin.settings.categories[a.cid].override) return -1;
@@ -260,7 +260,6 @@ plugin.render = async function(data) {
             return b.posts[0].timestamp - a.posts[0].timestamp;
         });
     }
-    //callback(null, data);
     return null, data;
 };
 
@@ -274,15 +273,15 @@ function filterCategories(element) {
 
 async function getScores(templateData, req) {
     var promises = {};
-    const time = Date.now();
     templateData.categories.forEach(category => {
-        promises[category.cid] = getScoreForCategory(category, req.uid, time);
+        promises[category.cid] = getScoreForCategory(category, req.uid);
     });
     return await objectPromise(promises);
 }
 
-async function getScoreForCategory(category, uid, time) {
+async function getScoreForCategory(category, uid) {
     let score = 0;
+    const time = Date.now();
     const [
         activeUsers,
         recentReplies,
@@ -314,7 +313,7 @@ async function getScoreForCategory(category, uid, time) {
         sumOfArray(categoryAnalytics["pageviews:hourly"]) *
         plugin.settings.popular.pageViewsDay;
 
-    score += popularTopics.length * plugin.settings.popular.popularTopics;
+    score += popularTopics.tids.length * plugin.settings.popular.popularTopics;
 
     score += category.topic_count * plugin.settings.popular.topicCount;
     score += category.post_count * plugin.settings.popular.postCount;
