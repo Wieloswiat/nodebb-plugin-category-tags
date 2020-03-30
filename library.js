@@ -48,8 +48,9 @@ plugin.init = function(params, callback) {
                     topicCount: 100,
                     recentPosts: 10000,
                     popularTopics: 2500,
-                    pageViewsMonth: 500,
-                    pageViewsDay: 300
+                    pageViewsMonth: 100,
+                    pageViewsDay: 150,
+                    monthlyPosts: 2000
                 },
                 membership: true
             };
@@ -72,8 +73,9 @@ plugin.init = function(params, callback) {
                 topicCount: 100,
                 recentPosts: 10000,
                 popularTopics: 2500,
-                pageViewsMonth: 500,
-                pageViewsDay: 300
+                pageViewsMonth: 100,
+                pageViewsDay: 150,
+                monthlyPosts: 2000
             },
             membership: true
         };
@@ -278,9 +280,19 @@ async function getScores(templateData, req) {
 
 async function getScoreForCategory(category) {
     let score = 0;
-    const [activeUsers, categoryAnalytics, popularTopics] = await Promise.all([
+    const [
+        activeUsers,
+        categoryAnalytics,
+        monthlyPosts,
+        popularTopics
+    ] = await Promise.all([
         categories.getActiveUsers(category.cid),
         analytics.getCategoryAnalytics(category.cid),
+        analytics.getDailyStatsForSet(
+            "analytics:posts:byCid:" + cid,
+            Date.now(),
+            30
+        ),
         topics.getSortedTopics({
             sort: "popular",
             cids: [category.cid],
@@ -299,6 +311,7 @@ async function getScoreForCategory(category) {
         sumOfArray(categoryAnalytics["pageviews:hourly"]) *
         plugin.settings.popular.pageViewsDay;
 
+    score += sumOfArray(monthlyPosts) * plugin.settings.popular.monthlyPosts;
     score += popularTopics.tids.length * plugin.settings.popular.popularTopics;
 
     score += category.topic_count * plugin.settings.popular.topicCount;
