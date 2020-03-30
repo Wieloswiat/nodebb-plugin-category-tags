@@ -1,42 +1,43 @@
 {
-	"id": "nodebb-plugin-category-tags",
-	"url": "https://github.com/oplik0/nodebb-plugin-category-tags",
-	"library": "./library.js",
-	"hooks": [
-		{
-			"hook": "static:app.load", "method": "init"
-		},
-		{
-			"hook": "filter:admin.header.build", "method": "addAdminNavigation"
-		},
-		{
-			"hook": "filter:categories.build", "method": "render"
-		},
-		{
-			"hook": "action:category.create", "method": "addCategory"
-		},
-		{
-			"hook": "action:category.delete", "method": "deleteCategory"
-		},
-		{
-			"hook": "filter:widgets.getWidgets","method": "getWidgets"
-		},
-		{
-			"hook": "filter:widget.render:category-tags", "method": "renderWidget"
-		}
-	],
-	"staticDirs": {
-		"static": "./static"
-	},
-	"less": [
-		"static/style.less"
-	],
-	"scripts": [
-		"static/lib/main.js"
-	],
-	"acpScripts": [
-		"static/lib/admin.js"
-	],
-	"templates": "static/templates",
-	"languages": "static/languages"
+    "id": "nodebb-plugin-category-tags",
+    "url": "https://github.com/oplik0/nodebb-plugin-category-tags",
+    "library": "./library.js",
+    "hooks": [
+        {
+            "hook": "static:app.load",
+            "method": "init"
+        },
+        {
+            "hook": "filter:admin.header.build",
+            "method": "addAdminNavigation"
+        },
+        {
+            "hook": "filter:categories.build",
+            "method": "render"
+        },
+        {
+            "hook": "action:category.create",
+            "method": "addCategory"
+        },
+        {
+            "hook": "action:category.delete",
+            "method": "deleteCategory"
+        },
+        {
+            "hook": "filter:widgets.getWidgets",
+            "method": "getWidgets"
+        },
+        {
+            "hook": "filter:widget.render:category-tags",
+            "method": "renderWidget"
+        }
+    ],
+    "staticDirs": {
+        "static": "./static"
+    },
+    "less": ["static/style.less"],
+    "scripts": ["static/lib/main.js"],
+    "acpScripts": ["static/lib/admin.js"],
+    "templates": "static/templates",
+    "languages": "static/languages"
 }

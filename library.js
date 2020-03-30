@@ -1,7 +1,6 @@
 "use strict";
 
 const util = require("util");
-const async = require("async");
 const benchpressjs = require.main.require("benchpressjs");
 
 const controllers = require("./lib/controllers");
@@ -274,31 +273,35 @@ function filterCategories(element) {
 }
 
 async function getScores(templateData, req) {
-    let promises = {};
+    var promises = {};
+    const time = Date.now();
     templateData.categories.forEach(category => {
-        promises[category.cid] = getScoreForCategory(category, req.uid);
+        promises[category.cid] = getScoreForCategory(
+            category.cid,
+            req.uid,
+            time
+        );
     });
-    return await async.parallel(promises);
+    return await objectPromise(promises);
 }
 
-async function getScoreForCategory(category, uid) {
+async function getScoreForCategory(category, uid, time) {
     let score = 0;
-    const time = Date.now();
-    const {
+    const [
         activeUsers,
         recentReplies,
         categoryAnalytics,
         popularTopics
-    } = await async.parallel({
-        activeUsers: categories.getActiveUsers(category.cid),
-        recentReplies: categories.getRecentReplies(category.cid, uid, 250),
-        categoryAnalytics: analytics.getCategoryAnalytics(category.cid),
-        popularTopics: topics.getSortedTopics({
+    ] = await Promise.all([
+        categories.getActiveUsers(category.cid),
+        categories.getRecentReplies(category.cid, uid, 250),
+        analytics.getCategoryAnalytics(category.cid),
+        topics.getSortedTopics({
             sort: "popular",
             cids: [category.cid],
             term: 604800
         })
-    });
+    ]);
     score += activeUsers.length * plugin.settings.popular.activeUsers;
     const replies = recentReplies.filter(
         x =>
@@ -325,4 +328,14 @@ async function getScoreForCategory(category, uid) {
 function sumOfArray(Arr) {
     return Arr.reduce((a, b) => a + b, 0);
 }
+const objectPromise = obj =>
+    Promise.all(
+        Object.keys(obj).map(key =>
+            Promise.resolve(obj[key]).then(val => ({ key: key, val: val }))
+        )
+    ).then(items => {
+        let result = {};
+        items.forEach(item => (result[item.key] = item.val));
+        return result;
+    });
 module.exports = plugin;
