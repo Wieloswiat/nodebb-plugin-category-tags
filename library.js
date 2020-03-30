@@ -1,6 +1,7 @@
 "use strict";
 
 const util = require("util");
+const async = require("async");
 const benchpressjs = require.main.require("benchpressjs");
 
 const controllers = require("./lib/controllers");
@@ -42,14 +43,12 @@ plugin.init = function(params, callback) {
                     sort: true
                 },
                 popular: {
-                    activeUsers: 5000,
+                    activeUsers: 15000,
                     postCount: 1,
                     topicCount: 100,
-                    recentPosts: 15000,
-                    recentPostsTime: 604800000,
-                    recentPostsTime: 604800000,
-                    popularTopics: 5000,
-                    pageViewsWeek: 500,
+                    recentPosts: 10000,
+                    popularTopics: 2500,
+                    pageViewsMonth: 500,
                     pageViewsDay: 300
                 },
                 membership: true
@@ -68,14 +67,12 @@ plugin.init = function(params, callback) {
                 sort: true
             },
             popular: {
-                activeUsers: 5000,
+                activeUsers: 15000,
                 postCount: 1,
                 topicCount: 100,
-                recentPosts: 15000,
-                recentPostsTime: 604800000,
-                recentPostsTime: 604800000,
-                popularTopics: 5000,
-                pageViewsWeek: 500,
+                recentPosts: 10000,
+                popularTopics: 2500,
+                pageViewsMonth: 500,
                 pageViewsDay: 300
             },
             membership: true
@@ -274,22 +271,15 @@ function filterCategories(element) {
 async function getScores(templateData, req) {
     var promises = {};
     templateData.categories.forEach(category => {
-        promises[category.cid] = getScoreForCategory(category, req.uid);
+        promises[category.cid] = getScoreForCategory(category);
     });
     return await objectPromise(promises);
 }
 
-async function getScoreForCategory(category, uid) {
+async function getScoreForCategory(category) {
     let score = 0;
-    const time = Date.now();
-    const [
-        activeUsers,
-        recentReplies,
-        categoryAnalytics,
-        popularTopics
-    ] = await Promise.all([
+    const [activeUsers, categoryAnalytics, popularTopics] = await Promise.all([
         categories.getActiveUsers(category.cid),
-        categories.getRecentReplies(category.cid, uid, 250),
         analytics.getCategoryAnalytics(category.cid),
         topics.getSortedTopics({
             sort: "popular",
@@ -298,17 +288,13 @@ async function getScoreForCategory(category, uid) {
         })
     ]);
     score += activeUsers.length * plugin.settings.popular.activeUsers;
-    const replies = recentReplies.filter(
-        x =>
-            time - x.timestamp <= plugin.settings.popular.recentPostsTime &&
-            time - x.timestamp > 0 &&
-            !x.deleted
-    );
-    score += replies.length * plugin.settings.popular.recentPosts;
 
     score +=
+        sumOfArray(categoryAnalytics["posts:daily"]) *
+        plugin.settings.popular.recentPosts;
+    score +=
         sumOfArray(categoryAnalytics["pageviews:daily"]) *
-        plugin.settings.popular.pageViewsWeek;
+        plugin.settings.popular.pageViewsMonth;
     score +=
         sumOfArray(categoryAnalytics["pageviews:hourly"]) *
         plugin.settings.popular.pageViewsDay;
