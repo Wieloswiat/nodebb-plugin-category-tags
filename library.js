@@ -1,6 +1,7 @@
 "use strict";
 
 const util = require("util");
+const async = require("async");
 const benchpressjs = require.main.require("benchpressjs");
 
 const controllers = require("./lib/controllers");
