@@ -28,8 +28,8 @@
             "method": "getWidgets"
         },
         {
-            "hook": "filter:widget.render:category-tags",
-            "method": "renderWidget"
+            "hook": "filter:widget.render:category-tags-sort",
+            "method": "renderSortWidget"
         }
     ],
     "staticDirs": {
