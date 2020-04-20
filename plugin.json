@@ -36,7 +36,6 @@
         "static": "./static"
     },
     "less": ["static/style.less"],
-    "scripts": ["static/lib/main.js"],
     "acpScripts": ["static/lib/admin.js"],
     "templates": "static/templates",
     "languages": "static/languages"

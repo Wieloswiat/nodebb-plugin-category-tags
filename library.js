@@ -1,148 +1,129 @@
 "use strict";
+import merge from "lodash";
 
-const util = require("util");
-const async = require("async");
+const LRU = require("lru-cache");
 const benchpressjs = require.main.require("benchpressjs");
 
-const controllers = require("./lib/controllers");
 const meta = require.main.require("./src/meta");
 const helpers = require.main.require("./src/routes/helpers");
 const categories = require.main.require("./src/categories");
 const topics = require.main.require("./src/topics");
 const groups = require.main.require("./src/groups");
+const privileges = require.main.require("./src/privileges");
 const analytics = require.main.require("./src/analytics");
+const socket = require.main.require("./src/socket.io/plugins");
+
 var app;
+
+const cache = new LRU({
+    max: 500,
+    maxAge: 24 * 60 * 60 * 1000,
+});
+socket.categoryTags = {};
 
 const plugin = {};
 
-groups.getUserGroups = util.promisify(groups.getUserGroups);
-categories.getActiveUsers = util.promisify(categories.getActiveUsers);
-categories.getRecentReplies = util.promisify(categories.getRecentReplies);
+async function renderAdminPage(req, res) {
+    return res.render("admin/plugins/category-tags", {});
+}
 
-plugin.init = function(params, callback) {
+plugin.init = async function (params) {
     app = params.app;
     const router = params.router;
     const hostMiddleware = params.middleware;
-    const hostControllers = params.controllers;
+    const controllers = params.controllers;
 
-    // const hostControllers = params.controllers;
-    meta.settings.get("category-tags", function(err, settings) {
-        if (err) {
-            winston.error(
-                "[plugin/category-tags] Could not retrieve plugin settings!"
-            );
-            plugin.settings = {
-                tags: ["tag"],
-                categories: {
-                    1: { tags: [], override: true },
-                    2: { tags: [], override: true },
-                    4: { tags: [], override: true }
-                },
-                override: {
-                    filter: true,
-                    sort: true
-                },
-                popular: {
-                    activeUsers: 15000,
-                    postCount: 1,
-                    topicCount: 100,
-                    recentPosts: 10000,
-                    popularTopics: 2500,
-                    pageViewsMonth: 100,
-                    pageViewsDay: 150,
-                    monthlyPosts: 2000
-                },
-                membership: true
-            };
-            return;
-        }
+    const settings = await meta.settings.get("category-tags-settings");
+    if (settings == undefined) {
+        winston.error(
+            "[plugin/category-tags] Could not retrieve plugin settings!"
+        );
         plugin.settings = {
-            tags: ["tag"],
-            categories: {
-                1: { tags: [], override: true },
-                2: { tags: [], override: true },
-                4: { tags: [], override: true }
-            },
-            override: {
-                filter: true,
-                sort: true
-            },
-            popular: {
-                activeUsers: 15000,
-                postCount: 1,
-                topicCount: 100,
-                recentPosts: 10000,
-                popularTopics: 2500,
-                pageViewsMonth: 100,
-                pageViewsDay: 150,
-                monthlyPosts: 2000
-            },
-            membership: true
+            overrideFilter: true,
+            overrideSort: true,
+            activeUsersWeight: 15000,
+            postCountWeight: 1,
+            topicCountWeight: 100,
+            recentPostsWeight: 10000,
+            popularTopicsWeight: 2500,
+            pageViewsMonthWeight: 100,
+            pageViewsDayWeight: 150,
+            monthlyPostsWeight: 2000,
+            membership: true,
         };
-        categories.getAllCategories(1, function(err, allCategories) {
-            allCategories.forEach(category => {
-                if (plugin.settings.categories[category.cid] == undefined) {
-                    plugin.settings.categories[category.cid] = {
-                        tags: [],
-                        override: false
-                    };
-                }
-            });
-        });
-        //plugin.settings = settings;
+    } else {
+        plugin.settings = settings;
+    }
+    const tags = await meta.settings.get("category-tags");
+    if (tags == undefined) {
+        plugin.tags = {
+            tags: ["tag"],
+            categories: {},
+        };
+    } else {
+        plugin.tags = tags;
+    }
+    const allCategories = await categories.getAllCategories(1);
+    allCategories.forEach((category) => {
+        if (plugin.tags.categories[category.cid] == undefined) {
+            plugin.tags.categories[category.cid] = {
+                tags: [],
+                override: false,
+            };
+        }
     });
+    meta.settings.set("category-tags", plugin.tags);
 
     router.get(
         "/admin/plugins/category-tags",
         hostMiddleware.admin.buildHeader,
-        controllers.renderAdminPage
+        renderAdminPage
     );
-    router.get("/api/admin/plugins/category-tags", controllers.renderAdminPage);
+    router.get("/api/admin/plugins/category-tags", renderAdminPage);
     helpers.setupPageRoute(
         router,
         "/categories/*",
         hostMiddleware,
         [],
-        hostControllers.categories.list
+        controllers.categories.list
     );
-    callback();
 };
 
-plugin.addAdminNavigation = function(header, callback) {
+plugin.addAdminNavigation = function (header, callback) {
     header.plugins.push({
         route: "/plugins/category-tags",
         icon: "fa-tint",
-        name: "category-tags"
+        name: "category-tags",
     });
 
     callback(null, header);
 };
 
-plugin.addCategory = function(data) {
-    plugin.settings.categories[data.category.cid] = {
+plugin.addCategory = function (data) {
+    plugin.tags.categories[data.category.cid] = {
         tags: [],
-        override: false
+        override: false,
     };
 };
-plugin.deleteCategory = function(data) {
-    delete plugin.settings.categories[data.category.cid];
+plugin.deleteCategory = function (data) {
+    return delete plugin.tags.categories[data.category.cid];
 };
 
-plugin.getWidgets = function(data, callback) {
+plugin.getWidgets = function (data, callback) {
     var widget = {
         name: "Sorting and filtering",
         widget: "category-tags",
         description:
             "A menu that lets you choose what filters and sorting methods to use for coategory list",
-        content: ""
+        content: "",
     };
     data.push(widget);
     callback(null, data);
 };
-plugin.renderWidget = function(widget, callback) {
+plugin.renderWidget = function (widget, callback) {
     var tpl =
         '<div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length -->"<!-- IF breadcrumbs.length -->style="margin-top:-50px"<!-- ELSE -->style="margin-top:-50px;top:35px;"<!-- ENDIF breadcrumbs.length -->><button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{selectedSort.name} <span class="caret"></span></button><ul class="dropdown-menu" role="menu">{{{each sort}}}<li role="presentation" class="category"><a role="menu-item" href="{config.relative_path}/categories/{sort.url}"><i class="fa fa-fw <!-- IF sort.selected -->fa-check<!-- ENDIF sort.selected -->"></i>{sort.name}</a></li>{{{end}}}</ul></div>';
-    benchpressjs.compileParse(tpl, widget.templateData, function(err, output) {
+    benchpressjs.compileParse(tpl, widget.templateData, function (err, output) {
         if (err) {
             return callback(err);
         }
@@ -152,7 +133,7 @@ plugin.renderWidget = function(widget, callback) {
     });
 };
 
-plugin.render = async function(data) {
+plugin.render = async function (data) {
     data.templateData.sort = [
         { name: "[[category-tags:popular]]", url: "popular", selected: false },
         { name: "[[category-tags:new]]", url: "new", selected: false },
@@ -161,10 +142,10 @@ plugin.render = async function(data) {
         {
             name: "[[category-tags:nonmember]]",
             url: "nonmember",
-            selected: false
-        }
+            selected: false,
+        },
     ];
-    plugin.settings.tags.forEach(tag => {
+    plugin.settings.tags.forEach((tag) => {
         if (data.templateData.url.includes(tag)) {
             data.templateData.categories = data.templateData.categories.filter(
                 filterCategories,
@@ -179,8 +160,8 @@ plugin.render = async function(data) {
         data.templateData.breadcrumbs.push({ text: "[[category-tags:my]]" });
         var userGroups = await groups.getUserGroups([data.req.uid]);
         data.templateData.categories = data.templateData.categories.filter(
-            category =>
-                userGroups[0].find(group => group.name == category.name) !=
+            (category) =>
+                userGroups[0].find((group) => group.name == category.name) !=
                     undefined ||
                 (!!plugin.settings.override.filter &&
                     !!plugin.settings.categories[category.cid].override)
@@ -192,16 +173,16 @@ plugin.render = async function(data) {
     ) {
         data.templateData.sort[4].selected = true;
         data.templateData.selectedSort = {
-            name: "[[category-tags:nonmember]]"
+            name: "[[category-tags:nonmember]]",
         };
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({
-            text: "[[category-tags:nonmember]]"
+            text: "[[category-tags:nonmember]]",
         });
         var userGroups = await groups.getUserGroups([data.req.uid]);
         data.templateData.categories = data.templateData.categories.filter(
-            category =>
-                userGroups[0].find(group => group.name == category.name) ==
+            (category) =>
+                userGroups[0].find((group) => group.name == category.name) ==
                     undefined ||
                 (!!plugin.settings.override.filter &&
                     !!plugin.settings.categories[category.cid].override)
@@ -212,7 +193,7 @@ plugin.render = async function(data) {
         data.templateData.selectedSort = { name: "[[category-tags:popular]]" };
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({
-            text: "[[category-tags:popular]]"
+            text: "[[category-tags:popular]]",
         });
         const scores = await getScores(data.templateData, data.req);
         data.templateData.categories.sort((a, b) => {
@@ -247,7 +228,7 @@ plugin.render = async function(data) {
         data.templateData.selectedSort = { name: "[[category-tags:active]]" };
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({
-            text: "[[category-tags:active]]"
+            text: "[[category-tags:active]]",
         });
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.override.sort) {
@@ -272,7 +253,7 @@ function filterCategories(element) {
 
 async function getScores(templateData, req) {
     var promises = {};
-    templateData.categories.forEach(category => {
+    templateData.categories.forEach((category) => {
         promises[category.cid] = getScoreForCategory(category);
     });
     return await objectPromise(promises);
@@ -280,11 +261,15 @@ async function getScores(templateData, req) {
 
 async function getScoreForCategory(category) {
     let score = 0;
+    const cachedScore = cache.get(category.cid);
+    if (cachedScore != undefined) {
+        return cachedScore;
+    }
     const [
         activeUsers,
         categoryAnalytics,
         monthlyPosts,
-        popularTopics
+        popularTopics,
     ] = await Promise.all([
         categories.getActiveUsers(category.cid),
         analytics.getCategoryAnalytics(category.cid),
@@ -296,40 +281,81 @@ async function getScoreForCategory(category) {
         topics.getSortedTopics({
             sort: "popular",
             cids: [category.cid],
-            term: 604800
-        })
+            term: 604800,
+        }),
     ]);
-    score += activeUsers.length * plugin.settings.popular.activeUsers;
+    score += activeUsers.length * plugin.settings.activeUsersWeight;
 
     score +=
         sumOfArray(categoryAnalytics["posts:daily"]) *
-        plugin.settings.popular.recentPosts;
+        plugin.settings.recentPostsWeight;
     score +=
         sumOfArray(categoryAnalytics["pageviews:daily"]) *
-        plugin.settings.popular.pageViewsMonth;
+        plugin.settings.pageViewsMonthWeight;
     score +=
         sumOfArray(categoryAnalytics["pageviews:hourly"]) *
-        plugin.settings.popular.pageViewsDay;
+        plugin.settings.pageViewsDayWeight;
 
-    score += sumOfArray(monthlyPosts) * plugin.settings.popular.monthlyPosts;
-    score += popularTopics.tids.length * plugin.settings.popular.popularTopics;
+    score += sumOfArray(monthlyPosts) * plugin.settings.monthlyPostsWeight;
+    score += popularTopics.tids.length * plugin.settings.popularTopicsWeight;
 
-    score += category.topic_count * plugin.settings.popular.topicCount;
-    score += category.post_count * plugin.settings.popular.postCount;
+    score += category.topic_count * plugin.settings.topicCountWeight;
+    score += category.post_count * plugin.settings.postCountWeight;
+
+    cache.set(category.cid, score);
     return score;
 }
 
 function sumOfArray(Arr) {
     return Arr.reduce((a, b) => a + b, 0);
 }
-const objectPromise = obj =>
+const objectPromise = (obj) =>
     Promise.all(
-        Object.keys(obj).map(key =>
-            Promise.resolve(obj[key]).then(val => ({ key: key, val: val }))
+        Object.keys(obj).map((key) =>
+            Promise.resolve(obj[key]).then((val) => ({ key: key, val: val }))
         )
-    ).then(items => {
+    ).then((items) => {
         let result = {};
-        items.forEach(item => (result[item.key] = item.val));
+        items.forEach((item) => (result[item.key] = item.val));
         return result;
     });
+socket.categoryTags.reloadSettings = async function (socket, data) {
+    if (await privileges.isAdministrator(socket.uid)) {
+        plugin.settings = await meta.settings.get("category-tags-settings");
+    }
+};
+socket.categoryTags.saveTags = async function (socket, data) {
+    if ((await privileges.isAdministrator(socket.uid)) && data != undefined) {
+        plugin.tags = data;
+        await meta.settings.set("category-tags", plugin.tags);
+    }
+};
+socket.categoryTags.getTagsForCategory = async function (socket, data) {
+    if (typeof data.cid == "number") {
+        return plugin.tags.categories[data.cid].tags;
+    }
+};
+socket.categoryTags.setTagsForCategory = async function (socket, data) {
+    if (
+        typeof data.cid == "number" &&
+        every(
+            await Promise.all([
+                privileges.categories.isAdminOrMod(data.cid, socket.uid),
+                privileges.categories.can("modmin", data.cid, socket.uid),
+            ])
+        )
+    ) {
+        const allowedTags = plugin.tags.tags;
+        if (typeof data.tags == "string") {
+            data.tags = [data.tags];
+        }
+        if (data.tags.length > 0) {
+            data.tags = data.tags.filter((tag) => allowedTags.includes(tag));
+            plugin.tags.categories[data.cid].tags = merge(
+                plugin.tags.categories[data.cid].tags,
+                data.tags
+            );
+        }
+    }
+};
 module.exports = plugin;
