@@ -3,5 +3,19 @@
     "popular": "Popular",
     "active": "Active",
     "my": "My",
-    "nonmember": "Other"
+    "nonmember": "Other",
+    "sort": "Sort",
+    "admin.sortingAndFilters": "Sorting and Filters",
+    "admin.overrideFilter": "Categories can override filtering (ba always visible)",
+    "admin.overrideSort": "Categories can override sorting (be always on top)",
+    "admin.activeUsersWeight": "Weight of number of active users",
+    "admin.weights": "Weights of components used to sort by Popularity",
+    "admin.postCountWeight": "Weight of number of posts",
+    "admin.topicCountWeight": "Weight of number of topics",
+    "admin.recentPostsWeight": "Weight of number of new posts (created in last week)",
+    "admin.popularTopicsWeight": "Weight of number of popular topics",
+    "admin.pageViewsMonthWeight": "Weight of number of views in past month",
+    "admin.pageViewsDayWeight": "Weight of number of during last 24 hours",
+    "admin.monthlyPostsWeight": "Weight of number of posts in last month",
+    "admin.membership": "Allow users to filter categories by membership in groups with the same name"
 }

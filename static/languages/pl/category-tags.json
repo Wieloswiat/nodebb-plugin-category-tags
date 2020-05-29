@@ -3,5 +3,19 @@
     "popular": "Popularne",
     "active": "Aktywne",
     "my": "Moje",
-    "nonmember": "Pozostałe"
+    "nonmember": "Pozostałe",
+    "sort": "Sortuj",
+    "admin.sortingAndFilters": "Sortowanie i Filtry",
+    "admin.overrideFilter": "Wybrane kategorie mogą pomijać filtrowanie (zawsze być widoczne)",
+    "admin.overrideSort": "Wybrane kategorie mogą pomijać sortowanie (zawsze być na górze)",
+    "admin.weights": "Wagi składników sortowania według popularnych",
+    "admin.activeUsersWeight": "Waga liczby aktywnych użytkowników w Popularnych",
+    "admin.postCountWeight": "Waga liczby postów w Popularnych",
+    "admin.topicCountWeight": "Waga liczby liczby tematów w Popularnych",
+    "admin.recentPostsWeight": "Waga liczby liczby nowych postów (ostatni tydzień) w Popularnych",
+    "admin.popularTopicsWeight": "Waga liczby popularnych tematów w Popularnych",
+    "admin.pageViewsMonthWeight": "Waga liczby wyświetleń w ciągu ostatniego miesiąca w Popularnych",
+    "admin.pageViewsDayWeight": "Waga liczby wyświetleń w ciągu ostatnich 24 godzin w Popularnych",
+    "admin.monthlyPostsWeight": "Waga liczby postów stworzonych w ostatnim miesiącu w Popularnych",
+    "admin.membership": "Możliwość filtrowania według członkowstwa w grupie o tej samej nazwie co kategoria"
 }

@@ -1,7 +1,7 @@
 "use strict";
 
 const LRU = require.main.require("lru-cache");
-const _ = require("lodash");
+const _ = require.main.require("lodash");
 const benchpressjs = require.main.require("benchpressjs");
 
 const meta = require.main.require("./src/meta");
@@ -33,8 +33,8 @@ plugin.init = async function (params) {
     const settings = await meta.settings.get("category-tags-settings");
     if (settings === undefined || _.isEmpty(settings)) {
         plugin.settings = {
-            overrideFilter: true,
-            overrideSort: true,
+            overrideFilter: "on",
+            overrideSort: "on",
             activeUsersWeight: 15000,
             postCountWeight: 1,
             topicCountWeight: 100,
@@ -43,11 +43,15 @@ plugin.init = async function (params) {
             pageViewsMonthWeight: 100,
             pageViewsDayWeight: 150,
             monthlyPostsWeight: 2000,
-            membership: false,
+            membership: "off",
         };
+        meta.settings.set("category-tags-settings", plugin.settings);
     } else {
         plugin.settings = settings;
     }
+    plugin.settings = _.mapValues(plugin.settings, (value) =>
+        value === "on" ? true : value === "off" ? false : value
+    );
     const tags = await meta.settings.get("category-tags");
     if (tags === undefined || _.isEmpty(tags)) {
         plugin.tags = {
@@ -116,7 +120,33 @@ plugin.getWidgets = function (data, callback) {
 };
 plugin.renderSortWidget = function (widget, callback) {
     var tpl = `
-    <div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length -->" <!-- IF breadcrumbs.length -->style="margin-top:-50px"<!-- ELSE -->style="margin-top:-50px;top:35px;"<!-- ENDIF breadcrumbs.length --> >
+    <div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
+        <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            {{{each sort}}}
+                <li role="presentation" class="category">
+                    <a role="menu-item" href="{config.relative_path}/categories/{sort.url}">
+                    <i class="fa fa-fw <!-- IF sort.selected -->fa-check<!-- ENDIF sort.selected -->"></i>{sort.name}
+                    </a>
+                </li>
+            {{{end}}}
+        </ul>
+    </div>`;
+    benchpressjs.compileParse(tpl, widget.templateData, function (err, output) {
+        if (err) {
+            return callback(err);
+        }
+
+        widget.html = output;
+        callback(null, widget);
+    });
+};
+plugin.renderTagsWidget = function (widget, callback) {
+    var tpl = `
+    <div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
         <span class="caret"></span>
@@ -153,14 +183,27 @@ plugin.render = async function (data) {
             selected: false,
         },
     ];
-    plugin.tags.tags.forEach((tag) => {
-        if (data.templateData.url.includes(tag)) {
+    data.templateData.tags = plugin.tags.tags.map((tag) => ({
+        name: tag,
+        selected: false,
+    }));
+    data.templateData.selectedTags = [];
+    plugin.tags.tags.forEach((tag, i) => {
+        if (data.templateData.url.includes(tag.name)) {
+            data.templateData.tags[i].selected = true;
+            data.templateData.selectedTags.push(tag.name);
             data.templateData.categories = data.templateData.categories.filter(
                 filterCategories,
                 tag
             );
         }
     });
+    data.templateData.selectedTags =
+        data.templateData.selectedTags.length > 0
+            ? data.templateData.selectedTags
+            : false;
+    data.templateData.multipleTags =
+        data.templateData.selectedTags.length > 1 ? true : false;
     if (plugin.settings.membership && data.templateData.url.includes("/my")) {
         data.templateData.sort[3].selected = true;
         data.templateData.selectedSort = { name: "[[category-tags:my]]" };
@@ -172,7 +215,7 @@ plugin.render = async function (data) {
                 userGroups[0].find((group) => group.name === category.name) !==
                     undefined ||
                 (!!plugin.settings.overrideFilter &&
-                    !!plugin.settings.categories[category.cid].override)
+                    !!plugin.tags.categories[category.cid].override)
         );
     }
     if (
@@ -193,7 +236,7 @@ plugin.render = async function (data) {
                 userGroups[0].find((group) => group.name === category.name) ===
                     undefined ||
                 (!!plugin.settings.overrideFilter &&
-                    !!plugin.settings.categories[category.cid].override)
+                    !!plugin.tags.categories[category.cid].override)
         );
     }
     if (data.templateData.url.includes("/popular")) {
@@ -206,8 +249,8 @@ plugin.render = async function (data) {
         const scores = await getScores(data.templateData, data.req);
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
-                if (plugin.settings.categories[a.cid].override) return -1;
-                if (plugin.settings.categories[b.cid].override) return 1;
+                if (plugin.tags.categories[a.cid].override) return -1;
+                if (plugin.tags.categories[b.cid].override) return 1;
             }
             return scores[b.cid] - scores[a.cid];
         });
@@ -219,10 +262,10 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({ text: "[[category-tags:new]]" });
         data.templateData.categories.sort((a, b) =>
             plugin.settings.overrideSort &&
-            plugin.settings.categories[a.cid].override
+            plugin.tags.categories[a.cid].override
                 ? -1
                 : plugin.settings.overrideSort &&
-                  plugin.settings.categories[b.cid].override
+                  plugin.tags.categories[b.cid].override
                 ? 1
                 : a.cid < b.cid
                 ? 1
@@ -240,8 +283,8 @@ plugin.render = async function (data) {
         });
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
-                if (plugin.settings.categories[a.cid].override) return -1;
-                if (plugin.settings.categories[b.cid].override) return 1;
+                if (plugin.tags.categories[a.cid].override) return -1;
+                if (plugin.tags.categories[b.cid].override) return 1;
             }
             if (!a.posts[0] || !b.posts[0])
                 return -1 * !b.posts[0] + 1 * !a.posts[0];
@@ -253,9 +296,9 @@ plugin.render = async function (data) {
 
 function filterCategories(element) {
     return (
-        !!plugin.settings.categories[element.cid].tags.includes(this) ||
+        !!plugin.tags.categories[element.cid].tags.includes(this) ||
         (!!plugin.settings.overrideFilter &&
-            !!plugin.settings.categories[element.cid].override)
+            !!plugin.tags.categories[element.cid].override)
     );
 }
 
@@ -330,6 +373,9 @@ const objectPromise = (obj) =>
 socket.categoryTags.reloadSettings = async function (socket, data) {
     if (await privileges.isAdministrator(socket.uid)) {
         plugin.settings = await meta.settings.get("category-tags-settings");
+        plugin.settings = _.mapValues(plugin.settings, (value) =>
+            value === "on" ? true : value === "off" ? false : value
+        );
     }
 };
 socket.categoryTags.saveTags = async function (socket, data) {

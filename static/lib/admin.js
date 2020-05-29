@@ -8,19 +8,24 @@ define("admin/plugins/category-tags", ["settings"], function (Settings) {
     ACP.init = function () {
         Settings.load("category-tags-settings", $(".category-tags-settings"));
 
-        $("#save").on("click", function () {
+        $("#save").on("click", function (e) {
+            e.preventDefault();
             Settings.save(
                 "category-tags-settings",
                 $(".category-tags-settings"),
                 function () {
-                    socket.emit("plugins.categoryTags.reloadSettings", () => {
-                        app.alert({
-                            type: "success",
-                            alert_id: "category-tags-saved",
-                            title: "Settings Saved",
-                            message: "no reload needed",
-                        });
-                    });
+                    socket.emit(
+                        "plugins.categoryTags.reloadSettings",
+                        {},
+                        () => {
+                            app.alert({
+                                type: "success",
+                                alert_id: "category-tags-saved",
+                                title: "Settings Saved",
+                                message: "no reload needed",
+                            });
+                        }
+                    );
                 }
             );
         });

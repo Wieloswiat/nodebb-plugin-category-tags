@@ -1,7 +1,7 @@
 {
     "name": "nodebb-plugin-category-tags",
-    "version": "0.3.3",
-    "description": "A starter kit for quickly creating NodeBB plugins",
+    "version": "0.4.0",
+    "description": "Filter and sort categories",
     "main": "library.js",
     "repository": {
         "type": "git",
@@ -37,13 +37,5 @@
     "nbbpm": {
         "compatibility": "^1.13.0"
     },
-    "devDependencies": {
-        "@commitlint/cli": "^8.3.5",
-        "@commitlint/config-angular": "^8.3.4",
-        "eslint": "^6.8.0",
-        "eslint-config-airbnb-base": "^14.1.0",
-        "eslint-plugin-import": "^2.20.2",
-        "husky": "^4.2.3",
-        "lint-staged": "^10.1.6"
-    }
+    "dependencies": {}
 }
