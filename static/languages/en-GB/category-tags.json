@@ -5,6 +5,8 @@
     "my": "My",
     "nonmember": "Other",
     "sort": "Sort",
+    "tags": "Tags",
+    "override": "override",
     "admin.sortingAndFilters": "Sorting and Filters",
     "admin.overrideFilter": "Categories can override filtering (ba always visible)",
     "admin.overrideSort": "Categories can override sorting (be always on top)",

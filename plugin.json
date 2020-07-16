@@ -30,6 +30,10 @@
         {
             "hook": "filter:widget.render:category-tags-sort",
             "method": "renderSortWidget"
+        },
+        {
+            "hook": "filter:widget.render:category-tags-tags",
+            "method": "renderTagsWidget"
         }
     ],
     "staticDirs": {

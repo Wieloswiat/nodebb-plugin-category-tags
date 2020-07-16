@@ -7,7 +7,6 @@ define("admin/plugins/category-tags", ["settings"], function (Settings) {
 
     ACP.init = function () {
         Settings.load("category-tags-settings", $(".category-tags-settings"));
-
         $("#save").on("click", function (e) {
             e.preventDefault();
             Settings.save(

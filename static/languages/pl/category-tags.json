@@ -5,6 +5,8 @@
     "my": "Moje",
     "nonmember": "Pozostałe",
     "sort": "Sortuj",
+    "tags": "Tagi",
+    "override": "Zawsze pokazuj",
     "admin.sortingAndFilters": "Sortowanie i Filtry",
     "admin.overrideFilter": "Wybrane kategorie mogą pomijać filtrowanie (zawsze być widoczne)",
     "admin.overrideSort": "Wybrane kategorie mogą pomijać sortowanie (zawsze być na górze)",
