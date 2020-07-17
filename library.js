@@ -309,7 +309,6 @@ plugin.render = async function (data) {
 };
 
 function filterCategories(element) {
-    console.log(plugin.settings.categories[element.cid].tags)
     return (
         !!plugin.settings.categories[element.cid].tags.includes(this.name) ||
         (!!plugin.settings.overrideFilter &&
