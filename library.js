@@ -37,8 +37,8 @@ plugin.init = async function (params) {
     const router = params.router;
     const hostMiddleware = params.middleware;
     const controllers = params.controllers;
-    let settings = await meta.settings.get("category-tags-settings", plugin.settings);
-    //const settings = await meta.settings.get("category-tags-settings");
+    let settings = await meta.settings.get("category-tags-settings-1.0", plugin.settings);
+    //const settings = await meta.settings.get("category-tags-settings-1.0");
     if (settings === undefined || _.isEmpty(settings)) {
         plugin.settings = {
             overrideFilter: "on",
@@ -55,7 +55,7 @@ plugin.init = async function (params) {
             tags: [{name: "tag", color: "#000000"}],
             categories: {},
         };
-        await meta.settings.set("category-tags-settings", plugin.settings);
+        await meta.settings.set("category-tags-settings-1.0", plugin.settings);
     } else {
         plugin.settings = settings;
     }
@@ -388,7 +388,7 @@ const objectPromise = (obj) =>
 socket.categoryTags.reloadSettings = async function (socket, data) {
     const privilege = await Promise.all([privileges.users.isAdministrator(socket.uid), privileges.admin.can("admin:settings", socket.uid)]);
     if (privilege.some(element => element)) {
-        const settings = await meta.settings.get("category-tags-settings");
+        const settings = await meta.settings.get("category-tags-settings-1.0");
         
         plugin.settings = {};
         plugin.settings = _.mapValues(settings, (value) =>
