@@ -12,7 +12,7 @@ const groups = require.main.require("./src/groups");
 const privileges = require.main.require("./src/privileges");
 const analytics = require.main.require("./src/analytics");
 const socket = require.main.require("./src/socket.io/plugins");
-const utils = require.main.require("./src/utils");
+const slugify = require.main.require("slugify");
 const cache = new LRU({
     max: 500,
     maxAge: 24 * 60 * 60 * 1000,
@@ -196,14 +196,14 @@ plugin.render = async function (data) {
         name: tag.name,
         selected: false,
         url: data.templateData.url[data.templateData.url.length]==="/" ? 
-        data.templateData.url + utils.slugify(tag.name) + "/" : 
-        data.templateData.url + "/" + utils.slugify(tag.name) + "/"
+        data.templateData.url + slugify(tag.name) + "/" : 
+        data.templateData.url + "/" +.slugify(tag.name) + "/"
     }));
     data.templateData.selectedTags = [];
     plugin.settings.tags.forEach((tag, i) => {
-        if (data.templateData.url.includes("/" + utils.slugify(tag.name))) {
+        if (data.templateData.url.includes("/" + slugify(tag.name))) {
             data.templateData.tags[i].selected = true;
-            data.templateData.tags[i].url = data.templateData.url.replace("/" + utils.slugify(tag.name), "");
+            data.templateData.tags[i].url = data.templateData.url.replace("/" + slugify(tag.name), "");
             data.templateData.selectedTags.push(tag.name);
             data.templateData.categories = data.templateData.categories.filter(
                 filterCategories,
