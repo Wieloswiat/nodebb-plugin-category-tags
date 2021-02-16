@@ -197,7 +197,7 @@ plugin.render = async function (data) {
         selected: false,
         url: data.templateData.url[data.templateData.url.length]==="/" ? 
         data.templateData.url + slugify(tag.name) + "/" : 
-        data.templateData.url + "/" +.slugify(tag.name) + "/"
+        data.templateData.url + "/" + slugify(tag.name) + "/"
     }));
     data.templateData.selectedTags = [];
     plugin.settings.tags.forEach((tag, i) => {
