@@ -12,7 +12,7 @@ const groups = require.main.require("./src/groups");
 const privileges = require.main.require("./src/privileges");
 const analytics = require.main.require("./src/analytics");
 const socket = require.main.require("./src/socket.io/plugins");
-const slugify = require.main.require("slugify");
+const slugify = require.main.require("./src/slugify");
 const cache = new LRU({
     max: 500,
     maxAge: 24 * 60 * 60 * 1000,
