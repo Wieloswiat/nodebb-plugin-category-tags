@@ -1,6 +1,6 @@
 {
     "name": "nodebb-plugin-category-tags",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "description": "Filter and sort categories",
     "main": "library.js",
     "repository": {
@@ -13,18 +13,6 @@
         "category-tags",
         "shell"
     ],
-    "husky": {
-        "hooks": {
-            "pre-commit": "lint-staged",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "lint-staged": {
-        "*.js": [
-            "eslint --fix",
-            "git add"
-        ]
-    },
     "author": {
         "name": "oplik0",
         "email": "opliko.reg+npm@protonmail.com"
@@ -35,6 +23,6 @@
     },
     "readmeFilename": "README.md",
     "nbbpm": {
-        "compatibility": "^1.13.0"
+        "compatibility": "^2.0.0"
     }
 }

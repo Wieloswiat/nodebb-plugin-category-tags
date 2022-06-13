@@ -64,7 +64,7 @@
 		</div>
 		<div class="row">
 			<h1>[[admin/manage/categories:settings]]</h1>
-				<!-- BEGIN categories -->
+				{{{ each categories }}}
 				<div class="row">
 					<div class="col-sm-2 col-xs-12 settings-header">{../name}</div>
 					<div class="col-sm-10 col-xs-12">
@@ -75,13 +75,13 @@
 							</label>
 						</div>
 						<select class="form-contol" data-type="select" name="categories.{@key}.tags" data-key="categories.{@key}.tags" multiple>
-							<!-- BEGIN categoryTags -->
+							{{{ each categoryTags }}}
 							<option value="{../name}">{../name}</option>
-							<!-- END categoryTags -->
+							{{{ end }}}
 						</select>
 					</div>
 				</div>
-				<!-- END categories -->
+				{{{ end }}}
 		</div>
 	</form>
 </div>

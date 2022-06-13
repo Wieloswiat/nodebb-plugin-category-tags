@@ -23,6 +23,7 @@ define("admin/plugins/category-tags", ["settings"], function (Settings) {
                                 title: "Settings Saved",
                                 message: "no reload needed",
                             });
+                            ajaxify.refresh();
                         }
                     );
                 }

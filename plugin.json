@@ -39,9 +39,13 @@
     "staticDirs": {
         "static": "./static"
     },
-    "less": ["static/style.less"],
-    "acpScripts": ["static/lib/admin.js"],
+    "less": [
+        "static/style.less"
+    ],
     "templates": "static/templates",
     "languages": "static/languages",
-    "defaultLang": "en-GB"
+    "defaultLang": "en-GB",
+    "modules": {
+        "../admin/plugins/category-tags.js": "static/lib/admin.js"
+    }
 }

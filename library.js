@@ -88,48 +88,53 @@ plugin.init = async function (params) {
     
 };
 
-plugin.addAdminNavigation = function (header, callback) {
+plugin.addAdminNavigation = async function (header) {
     header.plugins.push({
         route: "/plugins/category-tags",
         icon: "fa-tint",
         name: "category-tags",
     });
 
-    callback(null, header);
+    return header;
 };
 
-plugin.addCategory = function (data) {
-    plugin.settings.categories[data.category.cid] = {
-        tags: [],
-        override: false,
-    };
+plugin.addCategory = async function (data) {
+    const allCategories = await categories.getAllCategories(1);
+    allCategories.forEach((category) => {
+        if (plugin.tags.categories[category.cid] === undefined) {
+            plugin.tags.categories[category.cid] = {
+                tags: [],
+                override: false,
+            };
+        }
+    });
 };
 plugin.deleteCategory = function (data) {
     return delete plugin.settings.categories[data.category.cid];
 };
 
-plugin.getWidgets = function (data, callback) {
-    let widget = {
-        name: "Sorting and filtering",
+plugin.getWidgets = async function (data) {
+    const sort_widget = {
+        name: "Category sort",
         widget: "category-tags-sort",
         description:
-            "A menu that lets you choose what filters and sorting methods to use for coategory list",
+            "A menu that lets you choose what sorting methods to use for category list",
         content: "",
     };
-    data.push(widget);
-    widget = {
-        name: "Category tags",
+    const filter_widget = {
+        name: "Category filter",
         widget: "category-tags-tags",
         description:
-            "A menu that lets you filter categories by their assigned tags",
+            "A menu that lets you choose what tag filters to use for category list",
         content: "",
     };
-    data.push(widget);
-    callback(null, data);
+    data.push(sort_widget);
+    data.push(filter_widget)
+    return data;
 };
-plugin.renderSortWidget = function (widget, callback) {
+plugin.renderSortWidget = async function (widget) {
     var tpl = `
-    <div class="btn-group pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
+    <div class="col-md-1 col-md-offset-8 col-xs-3 col-xs-offset-6 col-sm-2 col-sm-offset-8 col-lg-1 col-slg-offset-8 <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
         <span class="caret"></span>
@@ -144,18 +149,12 @@ plugin.renderSortWidget = function (widget, callback) {
             {{{end}}}
         </ul>
     </div>`;
-    benchpressjs.compileParse(tpl, widget.templateData, function (err, output) {
-        if (err) {
-            return callback(err);
-        }
-
-        widget.html = output;
-        callback(null, widget);
-    });
+    widget.html = await benchpressjs.compileRender(tpl, widget.templateData);
+    return widget;
 };
-plugin.renderTagsWidget = function (widget, callback) {
+plugin.renderTagsWidget = async function (widget) {
     var tpl = `
-    <div class="btn-group pull-right <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" >
+    <div class="col-md-1 col-xs-3 col-sm-2 col-lg-1 <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" >
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <!-- IF selectedTags.length -->{selectedTags}<!-- ELSE -->[[category-tags:tags]]<!-- ENDIF selectedTags.length -->
         <span class="caret"></span>
@@ -170,14 +169,8 @@ plugin.renderTagsWidget = function (widget, callback) {
             {{{end}}}
         </ul>
     </div>`;
-    benchpressjs.compileParse(tpl, widget.templateData, function (err, output) {
-        if (err) {
-            return callback(err);
-        }
-
-        widget.html = output;
-        callback(null, widget);
-    });
+    widget.html = await benchpressjs.compileRender(tpl, widget.templateData);
+    return widget;
 };
 
 plugin.render = async function (data) {
@@ -263,8 +256,10 @@ plugin.render = async function (data) {
         const scores = await getScores(data.templateData, data.req);
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
-                if (plugin.settings.categories[a.cid].override) return -1;
-                if (plugin.settings.categories[b.cid].override) return 1;
+                try {
+                    if (plugin.tags.categories[a.cid].override) return -1;
+                    if (plugin.tags.categories[b.cid].override) return 1;
+                } catch (e) {}
             }
             return scores[b.cid] - scores[a.cid];
         });
@@ -297,8 +292,10 @@ plugin.render = async function (data) {
         });
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
-                if (plugin.settings.categories[a.cid].override) return -1;
-                if (plugin.settings.categories[b.cid].override) return 1;
+                try {
+                    if (plugin.tags.categories[a.cid].override) return -1;
+                    if (plugin.tags.categories[b.cid].override) return 1;
+                } catch (e) {}
             }
             if (!a.posts[0] || !b.posts[0])
                 return -1 * !b.posts[0] + 1 * !a.posts[0];
