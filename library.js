@@ -14,7 +14,7 @@ const analytics = require.main.require("./src/analytics");
 const socket = require.main.require("./src/socket.io/plugins");
 const slugify = require.main.require("./src/slugify");
 const cache = new LRU({
-    max: 500,
+    max: 1024,
     maxAge: 24 * 60 * 60 * 1000,
 });
 socket.categoryTags = {};
@@ -264,7 +264,7 @@ plugin.render = async function (data) {
         data.templateData.selectedSort = { name: "[[category-tags:my]]", url: "my" };
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({ text: "[[category-tags:my]]" });
-        const userGroups = await groups.getUserGroups([data.templateData.config.uid]);
+        const userGroups = await groups.getUserGroups([data.req.uid]);
         data.templateData.categories = data.templateData.categories.filter(
             (category) =>
                 userGroups[0].find((group) => group.name === category.name) !==
@@ -286,7 +286,7 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({
             text: "[[category-tags:nonmember]]",
         });
-        const userGroups = await groups.getUserGroups([data.templateData.config.uid]);
+        const userGroups = await groups.getUserGroups([data.req.uid]);
         data.templateData.categories = data.templateData.categories.filter(
             (category) =>
                 userGroups[0].find((group) => group.name === category.name) ===
@@ -302,7 +302,7 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({
             text: "[[category-tags:popular]]",
         });
-        const scores = await getScores(data.templateData, data.templateData.req);
+        const scores = await getScores(data.templateData, data.req);
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
                 try {
@@ -367,7 +367,7 @@ async function getScores(templateData, req) {
     templateData.categories.forEach((category) => {
         promises[category.cid] = getScoreForCategory(category);
     });
-    return await objectPromise(promises);
+    return objectPromise(promises);
 }
 
 async function getScoreForCategory(category) {
