@@ -100,7 +100,6 @@ plugin.addAdminNavigation = async function (header) {
 
 plugin.addCategory = async function (data) {
     const allCategories = await categories.getAllCategories(1);
-    console.log(JSON.stringify(plugin))
     allCategories.forEach((category) => {
         if (plugin.settings.categories[category.cid] === undefined) {
             plugin.settings.categories[category.cid] = {
@@ -242,7 +241,6 @@ plugin.render = async function (data) {
     }));
     data.templateData.selectedTags = [];
     plugin.settings.tags.forEach((tag, i) => {
-        console.log(data.templateData.url)
         if (data.templateData.url.match("/" + slugify(tag.name) + "($|/)")) {
             data.templateData.tags[i].selected = true;
             data.templateData.tags[i].url = data.templateData.url.replace("/" + slugify(tag.name), "");
