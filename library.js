@@ -85,7 +85,7 @@ plugin.init = async function (params) {
         [],
         controllers.categories.list
     );
-    
+    await reloadSettings({bypassAllChecks: true});
 };
 
 plugin.addAdminNavigation = async function (header) {
@@ -100,9 +100,10 @@ plugin.addAdminNavigation = async function (header) {
 
 plugin.addCategory = async function (data) {
     const allCategories = await categories.getAllCategories(1);
+    console.log(JSON.stringify(plugin))
     allCategories.forEach((category) => {
-        if (plugin.tags.categories[category.cid] === undefined) {
-            plugin.tags.categories[category.cid] = {
+        if (plugin.settings.categories[category.cid] === undefined) {
+            plugin.settings.categories[category.cid] = {
                 tags: [],
                 override: false,
             };
@@ -128,13 +129,21 @@ plugin.getWidgets = async function (data) {
             "A menu that lets you choose what tag filters to use for category list",
         content: "",
     };
+    const tag_and_sort_widget = {
+        name: "Category tag and sort",
+        widget: "category-tags-tags-and-sort",
+        description:
+            "A combination of sorting and filtering widgets",
+        content: "",
+    }
     data.push(sort_widget);
-    data.push(filter_widget)
+    data.push(filter_widget);
+    data.push(tag_and_sort_widget);
     return data;
 };
 plugin.renderSortWidget = async function (widget) {
     var tpl = `
-    <div class="col-md-1 col-md-offset-8 col-xs-3 col-xs-offset-6 col-sm-2 col-sm-offset-8 col-lg-1 col-slg-offset-8 <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
+    <div class="pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
         <span class="caret"></span>
@@ -154,7 +163,7 @@ plugin.renderSortWidget = async function (widget) {
 };
 plugin.renderTagsWidget = async function (widget) {
     var tpl = `
-    <div class="col-md-1 col-xs-3 col-sm-2 col-lg-1 <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" >
+    <div class="pull-right <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" >
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <!-- IF selectedTags.length -->{selectedTags}<!-- ELSE -->[[category-tags:tags]]<!-- ENDIF selectedTags.length -->
         <span class="caret"></span>
@@ -172,6 +181,45 @@ plugin.renderTagsWidget = async function (widget) {
     widget.html = await benchpressjs.compileRender(tpl, widget.templateData);
     return widget;
 };
+
+plugin.renderTagsAndSortWidget = async function (widget) {
+    var tpl = `
+    <div class="pull-right btn-group tag-sort-group" >
+        <div class="dropdown btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" data-toggle="dropdown">
+            <!-- IF selectedTags.length -->{selectedTags}<!-- ELSE -->[[category-tags:tags]]<!-- ENDIF selectedTags.length -->
+            <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                {{{each tags}}}
+                    <li role="presentation" class="category">
+                        <a role="menu-item" href="{../url}">
+                        <i class="fa fa-fw <!-- IF ../selected -->fa-check<!-- ENDIF ../selected -->"></i>{../name}
+                        </a>
+                    </li>
+                {{{end}}}
+            </ul>
+        </div>
+        <div class="dropdown btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" data-toggle="dropdown">
+            <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
+            <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                {{{each sort}}}
+                    <li role="presentation" class="category">
+                        <a role="menu-item" href="{config.relative_path}/categories/{sort.url}">
+                        <i class="fa fa-fw <!-- IF sort.selected -->fa-check<!-- ENDIF sort.selected -->"></i>{sort.name}
+                        </a>
+                    </li>
+                {{{end}}}
+            </ul>
+        </div>
+    </div>`;
+    widget.html = await benchpressjs.compileRender(tpl, widget.templateData);
+    return widget;
+}
+
 
 plugin.render = async function (data) {
     data.templateData.sort = [
@@ -194,7 +242,8 @@ plugin.render = async function (data) {
     }));
     data.templateData.selectedTags = [];
     plugin.settings.tags.forEach((tag, i) => {
-        if (data.templateData.url.includes("/" + slugify(tag.name))) {
+        console.log(data.templateData.url)
+        if (data.templateData.url.match("/" + slugify(tag.name) + "($|/)")) {
             data.templateData.tags[i].selected = true;
             data.templateData.tags[i].url = data.templateData.url.replace("/" + slugify(tag.name), "");
             data.templateData.selectedTags.push(tag.name);
@@ -215,7 +264,7 @@ plugin.render = async function (data) {
         data.templateData.selectedSort = { name: "[[category-tags:my]]", url: "my" };
         data.templateData.breadcrumbs[1].url = "/categories";
         data.templateData.breadcrumbs.push({ text: "[[category-tags:my]]" });
-        const userGroups = await groups.getUserGroups([data.req.uid]);
+        const userGroups = await groups.getUserGroups([data.templateData.config.uid]);
         data.templateData.categories = data.templateData.categories.filter(
             (category) =>
                 userGroups[0].find((group) => group.name === category.name) !==
@@ -237,7 +286,7 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({
             text: "[[category-tags:nonmember]]",
         });
-        const userGroups = await groups.getUserGroups([data.req.uid]);
+        const userGroups = await groups.getUserGroups([data.templateData.config.uid]);
         data.templateData.categories = data.templateData.categories.filter(
             (category) =>
                 userGroups[0].find((group) => group.name === category.name) ===
@@ -253,12 +302,12 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({
             text: "[[category-tags:popular]]",
         });
-        const scores = await getScores(data.templateData, data.req);
+        const scores = await getScores(data.templateData, data.templateData.req);
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
                 try {
-                    if (plugin.tags.categories[a.cid].override) return -1;
-                    if (plugin.tags.categories[b.cid].override) return 1;
+                    if (plugin.settings.categories[a.cid].override) return -1;
+                    if (plugin.settings.categories[b.cid].override) return 1;
                 } catch (e) {}
             }
             return scores[b.cid] - scores[a.cid];
@@ -293,8 +342,8 @@ plugin.render = async function (data) {
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
                 try {
-                    if (plugin.tags.categories[a.cid].override) return -1;
-                    if (plugin.tags.categories[b.cid].override) return 1;
+                    if (plugin.settings.categories[a.cid].override) return -1;
+                    if (plugin.settings.categories[b.cid].override) return 1;
                 } catch (e) {}
             }
             if (!a.posts[0] || !b.posts[0])
@@ -302,7 +351,7 @@ plugin.render = async function (data) {
             return b.posts[0].timestamp - a.posts[0].timestamp;
         });
     }
-    return null, data;
+    return data;
 };
 
 function filterCategories(element) {
@@ -381,9 +430,11 @@ const objectPromise = (obj) =>
         items.forEach((item) => (result[item.key] = item.val));
         return result;
     });
-socket.categoryTags.reloadSettings = async function (socket, data) {
-    const privilege = await Promise.all([privileges.users.isAdministrator(socket.uid), privileges.admin.can("admin:settings", socket.uid)]);
-    if (privilege.some(element => element)) {
+socket.categoryTags.reloadSettings = reloadSettings;
+async function reloadSettings(socket, data) {
+    let privilege;
+    if (!socket.bypassAllChecks) privilege = await Promise.all([privileges.users.isAdministrator(socket.uid), privileges.admin.can("admin:settings", socket.uid)]);
+    if (socket.bypassAllChecks || privilege.some(element => element)) {
         const settings = await meta.settings.get("category-tags-settings-1.0");
         
         plugin.settings = {};
@@ -393,13 +444,13 @@ socket.categoryTags.reloadSettings = async function (socket, data) {
         for (const [key, value] of Object.entries(plugin.settings)) {
             const found = key.match(/categories\.(?<cid>\d+)\.(?<type>override|tags)/i);
             if (!found){
-                
                 continue;
             }
-            
+          
             if (plugin.settings.categories[found.groups.cid]===undefined)
                 plugin.settings.categories[found.groups.cid] = {};
             plugin.settings.categories[found.groups.cid][found.groups.type] = value;
+            delete plugin.settings[key];
         }
         
     }

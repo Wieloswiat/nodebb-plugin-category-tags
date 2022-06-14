@@ -34,6 +34,10 @@
         {
             "hook": "filter:widget.render:category-tags-tags",
             "method": "renderTagsWidget"
+        },
+        {
+            "hook": "filter:widget.render:category-tags-tags-and-sort",
+            "method": "renderTagsAndSortWidget"
         }
     ],
     "staticDirs": {
