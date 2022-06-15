@@ -37,7 +37,7 @@ plugin.init = async function (params) {
     const router = params.router;
     const hostMiddleware = params.middleware;
     const controllers = params.controllers;
-    let settings = await meta.settings.get("category-tags-settings-1.0", plugin.settings);
+    let settings = await meta.settings.get("category-tags-settings-2.0", plugin.settings);
     if (settings === undefined || _.isEmpty(settings)) {
         plugin.settings = {
             overrideFilter: "on",
@@ -54,9 +54,9 @@ plugin.init = async function (params) {
             tags: [{name: "tag", color: "#000000"}],
             categories: {},
         };
-        await meta.settings.set("category-tags-settings-1.0", plugin.settings);
+        await meta.settings.set("category-tags-settings-2.0", plugin.settings);
     } else {
-        plugin.settings = settings;
+        await reloadSettings({bypassAllChecks: true});
     }
     plugin.settings = _.mapValues(plugin.settings, (value) =>
         value === "on" ? true : value === "off" ? false : value
@@ -84,7 +84,6 @@ plugin.init = async function (params) {
         [],
         controllers.categories.list
     );
-    await reloadSettings({bypassAllChecks: true});
 };
 
 plugin.addAdminNavigation = async function (header) {
@@ -432,22 +431,22 @@ async function reloadSettings(socket, data) {
     let privilege;
     if (!socket.bypassAllChecks) privilege = await Promise.all([privileges.users.isAdministrator(socket.uid), privileges.admin.can("admin:settings", socket.uid)]);
     if (socket.bypassAllChecks || privilege.some(element => element)) {
-        const settings = await meta.settings.get("category-tags-settings-1.0");
+        const settings = await meta.settings.get("category-tags-settings-2.0");
         
         plugin.settings = {};
         plugin.settings = _.mapValues(settings, (value) =>
             value === "on" ? true : value === "off" ? false : value
         );
         for (const [key, value] of Object.entries(plugin.settings)) {
-            const found = key.match(/categories\s*\.\s*(?<cid>\d+)\s*\.\s*(?<type>override|tags)/i);
+            const found = key.match(/categories\s*:\s*(?<cid>\d+)\s*:\s*(?<type>override|tags).*/iu);
             if (!found){
                 continue;
             }
             if (plugin.settings.categories[found.groups.cid]===undefined)
                 plugin.settings.categories[found.groups.cid] = {};
             plugin.settings.categories[found.groups.cid][found.groups.type] = value;
+            delete plugin.settings[key];
         }
-        await meta.settings.set("category-tags-settings-1.0", plugin.settings);
     }
 };
 socket.categoryTags.getTagsForCategory = async function (socket, data) {

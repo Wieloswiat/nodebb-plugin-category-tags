@@ -70,11 +70,11 @@
 					<div class="col-sm-10 col-xs-12">
 						<div class="checkbox">
 							<label for="categories.{@key}.override" class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-								<input type="checkbox" class="mdl-switch__input" id="categories.{@key}.override" name="categories.{@key}.override">
+								<input type="checkbox" class="mdl-switch__input" id="categories:{@key}:override" name="categories:{@key}:override">
 								<span class="mdl-switch__label"><strong>override</strong></span>
 							</label>
 						</div>
-						<select class="form-contol" data-type="select" name="categories.{@key}.tags" data-key="categories.{@key}.tags" multiple>
+						<select class="form-contol" data-type="select" name="categories:{@key}:tags" data-key="categories:{@key}:tags" multiple>
 							{{{ each categoryTags }}}
 							<option value="{../name}">{../name}</option>
 							{{{ end }}}
