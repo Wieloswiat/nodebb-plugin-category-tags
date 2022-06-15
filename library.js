@@ -440,7 +440,7 @@ async function reloadSettings(socket, data) {
             value === "on" ? true : value === "off" ? false : value
         );
         for (const [key, value] of Object.entries(plugin.settings)) {
-            const found = key.match(/categories\.(?<cid>\d+)\.(?<type>override|tags)/i);
+            const found = key.match(/categories\s*\.\s*(?<cid>\d+)\s*\.\s*(?<type>override|tags)/i);
             if (!found){
                 continue;
             }
