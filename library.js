@@ -38,7 +38,6 @@ plugin.init = async function (params) {
     const hostMiddleware = params.middleware;
     const controllers = params.controllers;
     let settings = await meta.settings.get("category-tags-settings-1.0", plugin.settings);
-    //const settings = await meta.settings.get("category-tags-settings-1.0");
     if (settings === undefined || _.isEmpty(settings)) {
         plugin.settings = {
             overrideFilter: "on",
@@ -444,13 +443,11 @@ async function reloadSettings(socket, data) {
             if (!found){
                 continue;
             }
-          
             if (plugin.settings.categories[found.groups.cid]===undefined)
                 plugin.settings.categories[found.groups.cid] = {};
             plugin.settings.categories[found.groups.cid][found.groups.type] = value;
-            delete plugin.settings[key];
         }
-        
+        await meta.settings.set("category-tags-settings-1.0", plugin.settings);
     }
 };
 socket.categoryTags.getTagsForCategory = async function (socket, data) {
