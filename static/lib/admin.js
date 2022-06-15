@@ -6,11 +6,11 @@ define("admin/plugins/category-tags", ["settings"], function (Settings) {
     var ACP = {};
 
     ACP.init = function () {
-        Settings.load("category-tags-settings-1.0", $(".category-tags-settings"));
+        Settings.load("category-tags-settings-2.0", $(".category-tags-settings"));
         $("#save").on("click", function (e) {
             e.preventDefault();
             Settings.save(
-                "category-tags-settings-1.0",
+                "category-tags-settings-2.0",
                 $(".category-tags-settings"),
                 function () {
                     socket.emit(
