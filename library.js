@@ -17,6 +17,7 @@ const cache = createCache({
     name: "plugin-category-tags",
     max: 4096,
     maxAge: 24 * 60 * 60 * 1000,
+    maxSize: 8192,
     sizeCalculation: () => 1
 });
 socket.categoryTags = {};
