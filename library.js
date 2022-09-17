@@ -480,4 +480,10 @@ socket.categoryTags.setTagsForCategory = async function (socket, data) {
         }
     }
 };
+
+plugin.getCache = function (caches) {
+    caches["nodebb-plugin-category-tags"] = cache;
+    return caches;
+}
+
 module.exports = plugin;

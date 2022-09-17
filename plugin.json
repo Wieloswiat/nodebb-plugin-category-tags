@@ -38,6 +38,10 @@
         {
             "hook": "filter:widget.render:category-tags-tags-and-sort",
             "method": "renderTagsAndSortWidget"
+        },
+        {
+            "hook": "filter:admin.cache.get",
+            "method": "getCache"
         }
     ],
     "staticDirs": {
