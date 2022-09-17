@@ -2,7 +2,7 @@
 
 /* globals $, app, socket, define */
 
-define("admin/plugins/category-tags", ["settings"], function (Settings) {
+define("admin/plugins/category-tags", ["settings", "alerts"], function (Settings, alerts) {
     var ACP = {};
 
     ACP.init = function () {
@@ -17,7 +17,7 @@ define("admin/plugins/category-tags", ["settings"], function (Settings) {
                         "plugins.categoryTags.reloadSettings",
                         {},
                         () => {
-                            app.alert({
+                            alerts.alert({
                                 type: "success",
                                 alert_id: "category-tags-saved",
                                 title: "Settings Saved",
