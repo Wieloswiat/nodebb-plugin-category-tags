@@ -1,9 +1,9 @@
 "use strict";
 
-const LRU = require.main.require("lru-cache");
 const _ = require.main.require("lodash");
 const benchpressjs = require.main.require("benchpressjs");
 
+const createCache = require.main.require("./src/cacheCreate");
 const meta = require.main.require("./src/meta");
 const helpers = require.main.require("./src/routes/helpers");
 const categories = require.main.require("./src/categories");
@@ -13,9 +13,11 @@ const privileges = require.main.require("./src/privileges");
 const analytics = require.main.require("./src/analytics");
 const socket = require.main.require("./src/socket.io/plugins");
 const slugify = require.main.require("./src/slugify");
-const cache = new LRU({
-    max: 1024,
+const cache = createCache({
+    name: "plugin-category-tags",
+    max: 4096,
     maxAge: 24 * 60 * 60 * 1000,
+    sizeCalculation: () => 1
 });
 socket.categoryTags = {};
 
