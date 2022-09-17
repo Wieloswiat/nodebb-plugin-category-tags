@@ -19,5 +19,6 @@
     "admin.pageViewsMonthWeight": "Weight of number of views in past month",
     "admin.pageViewsDayWeight": "Weight of number of during last 24 hours",
     "admin.monthlyPostsWeight": "Weight of number of posts in last month",
-    "admin.membership": "Allow users to filter categories by membership in groups with the same name"
+    "admin.membership": "Allow users to filter categories by membership in groups with the same name",
+    "admin.override": "Ignore sort"
 }

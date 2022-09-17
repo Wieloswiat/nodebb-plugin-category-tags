@@ -19,5 +19,6 @@
     "admin.pageViewsMonthWeight": "Waga liczby wyświetleń w ciągu ostatniego miesiąca w Popularnych",
     "admin.pageViewsDayWeight": "Waga liczby wyświetleń w ciągu ostatnich 24 godzin w Popularnych",
     "admin.monthlyPostsWeight": "Waga liczby postów stworzonych w ostatnim miesiącu w Popularnych",
-    "admin.membership": "Możliwość filtrowania według członkowstwa w grupie o tej samej nazwie co kategoria"
+    "admin.membership": "Możliwość filtrowania według członkowstwa w grupie o tej samej nazwie co kategoria",
+    "admin.override": "Nie sortuj"
 }
