@@ -1,7 +1,6 @@
 {
     "id": "nodebb-plugin-category-tags",
     "url": "https://github.com/oplik0/nodebb-plugin-category-tags",
-    "library": "./library.js",
     "hooks": [
         {
             "hook": "static:app.load",
@@ -47,8 +46,8 @@
     "staticDirs": {
         "static": "./static"
     },
-    "less": [
-        "static/style.less"
+    "scss": [
+        "static/style.scss"
     ],
     "templates": "static/templates",
     "languages": "static/languages",
