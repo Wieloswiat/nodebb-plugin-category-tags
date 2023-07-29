@@ -269,7 +269,7 @@ plugin.render = async function (data) {
                 userGroups[0].find((group) => group.name === category.name) !==
                     undefined ||
                 (!!plugin.settings.overrideFilter &&
-                    !!plugin.settings.categories[category.cid].override)
+                    !!plugin.settings.categories[category.cid]?.override)
         );
     }
     if (
@@ -291,7 +291,7 @@ plugin.render = async function (data) {
                 userGroups[0].find((group) => group.name === category.name) ===
                     undefined ||
                 (!!plugin.settings.overrideFilter &&
-                    !!plugin.settings.categories[category.cid].override)
+                    !!plugin.settings.categories[category.cid]?.override)
         );
     }
     if (data.templateData.url.includes("/popular")) {
@@ -305,8 +305,8 @@ plugin.render = async function (data) {
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
                 try {
-                    if (plugin.settings.categories[a.cid].override) return -1;
-                    if (plugin.settings.categories[b.cid].override) return 1;
+                    if (plugin.settings.categories[a.cid]?.override) return -1;
+                    if (plugin.settings.categories[b.cid]?.override) return 1;
                 } catch (e) {}
             }
             return scores[b.cid] - scores[a.cid];
@@ -319,10 +319,10 @@ plugin.render = async function (data) {
         data.templateData.breadcrumbs.push({ text: "[[category-tags:new]]" });
         data.templateData.categories.sort((a, b) =>
             plugin.settings.overrideSort &&
-            plugin.settings.categories[a.cid].override
+            plugin.settings.categories[a.cid]?.override
                 ? -1
                 : plugin.settings.overrideSort &&
-                  plugin.settings.categories[b.cid].override
+                  plugin.settings.categories[b.cid]?.override
                 ? 1
                 : a.cid < b.cid
                 ? 1
@@ -341,8 +341,8 @@ plugin.render = async function (data) {
         data.templateData.categories.sort((a, b) => {
             if (plugin.settings.overrideSort) {
                 try {
-                    if (plugin.settings.categories[a.cid].override) return -1;
-                    if (plugin.settings.categories[b.cid].override) return 1;
+                    if (plugin.settings.categories[a.cid]?.override) return -1;
+                    if (plugin.settings.categories[b.cid]?.override) return 1;
                 } catch (e) {}
             }
             if (!a.posts[0] || !b.posts[0])
@@ -355,9 +355,9 @@ plugin.render = async function (data) {
 
 function filterCategories(element) {
     return (
-        !!plugin.settings.categories[element.cid].tags.includes(this.name) ||
+        !!plugin.settings.categories[element.cid]?.tags.includes(this.name) ||
         (!!plugin.settings.overrideFilter &&
-            !!plugin.settings.categories[element.cid].override)
+            !!plugin.settings.categories[element.cid]?.override)
     );
 }
 
@@ -454,7 +454,7 @@ async function reloadSettings(socket, data) {
 };
 socket.categoryTags.getTagsForCategory = async function (socket, data) {
     if (typeof data.cid === "number") {
-        return plugin.settings.categories[data.cid].tags;
+        return plugin.settings.categories[data.cid]?.tags;
     }
 };
 socket.categoryTags.setTagsForCategory = async function (socket, data) {
@@ -473,8 +473,8 @@ socket.categoryTags.setTagsForCategory = async function (socket, data) {
         }
         if (data.tags.length > 0) {
             data.tags = data.tags.filter((tag) => allowedTags.includes(tag));
-            plugin.settings.categories[data.cid].tags = _.merge(
-                plugin.settings.categories[data.cid].tags,
+            plugin.settings.categories[data.cid]?.tags = _.merge(
+                plugin.settings.categories[data.cid]?.tags,
                 data.tags
             );
         }
