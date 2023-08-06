@@ -471,9 +471,9 @@ socket.categoryTags.setTagsForCategory = async function (socket, data) {
         if (typeof data.tags === "string") {
             data.tags = [data.tags];
         }
-        if (data.tags.length > 0) {
+        if (data.tags.length > 0 && plugin.settings.categories[data.cid]) {
             data.tags = data.tags.filter((tag) => allowedTags.includes(tag));
-            plugin.settings.categories[data.cid]?.tags = _.merge(
+            plugin.settings.categories[data.cid].tags = _.merge(
                 plugin.settings.categories[data.cid]?.tags,
                 data.tags
             );
