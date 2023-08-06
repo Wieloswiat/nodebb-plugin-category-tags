@@ -144,7 +144,7 @@ plugin.getWidgets = async function (data) {
 plugin.renderSortWidget = async function (widget) {
     var tpl = `
     <div class="pull-right <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" >
-        <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown">
+        <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" data-toggle="dropdown">
         <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
         <span class="caret"></span>
         </button>
@@ -164,7 +164,7 @@ plugin.renderSortWidget = async function (widget) {
 plugin.renderTagsWidget = async function (widget) {
     var tpl = `
     <div class="pull-right <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" >
-        <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown">
+        <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" data-toggle="dropdown">
         <!-- IF selectedTags.length -->{selectedTags}<!-- ELSE -->[[category-tags:tags]]<!-- ENDIF selectedTags.length -->
         <span class="caret"></span>
         </button>
@@ -186,7 +186,7 @@ plugin.renderTagsAndSortWidget = async function (widget) {
     var tpl = `
     <div class="pull-right btn-group tag-sort-group" >
         <div class="dropdown btn-group">
-            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" data-bs-toggle="dropdown">
+            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !tags.length -->hidden<!-- ENDIF !tags.length --> <!-- IF breadcrumbs.length -->tags-button-breadcrumbs<!-- ELSE -->tags-button<!-- ENDIF breadcrumbs.length -->" data-bs-toggle="dropdown" data-toggle="dropdown">
             <!-- IF selectedTags.length -->{selectedTags}<!-- ELSE -->[[category-tags:tags]]<!-- ENDIF selectedTags.length -->
             <span class="caret"></span>
             </button>
@@ -201,7 +201,7 @@ plugin.renderTagsAndSortWidget = async function (widget) {
             </ul>
         </div>
         <div class="dropdown btn-group">
-            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" data-bs-toggle="dropdown">
+            <button type="button" class="btn btn-default dropdown-toggle <!-- IF !sort.length -->hidden<!-- ENDIF !sort.length --> <!-- IF breadcrumbs.length -->sort-button-breadcrumbs<!-- ELSE -->sort-button<!-- ENDIF breadcrumbs.length -->" data-bs-toggle="dropdown" data-toggle="dropdown">
             <!-- IF selectedSort.name -->{selectedSort.name}<!-- ELSE -->[[category-tags:sort]]<!-- ENDIF selectedSort.name -->
             <span class="caret"></span>
             </button>
