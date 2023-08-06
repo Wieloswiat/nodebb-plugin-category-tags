@@ -1,6 +1,6 @@
 {
     "name": "nodebb-plugin-category-tags",
-    "version": "3.0.3",
+    "version": "3.0.4",
     "description": "Filter and sort categories",
     "main": "library.js",
     "repository": {
